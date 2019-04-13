@@ -1,0 +1,26 @@
+<header id="header" style="background-color: rgb(235, 237, 239); padding: 24px; box-shadow: 0 1px 0 rgba(0, 0, 20, 0.1);">
+    <h1>Foo?</h1>
+    {#<div class="flex-grow"></div>#}
+    <input type="submit" class="btn submit" value="{{ 'Save'|t('app') }}">
+</header>
+<div style="padding: 24px;">
+    {% set isVersion = className(entry) == 'craft\\models\\EntryVersion' %}
+    {% set isDraft = entry.id and className(entry) == 'craft\\models\\EntryDraft' %}
+
+    {% if not isVersion %}
+        <input type="hidden" name="sectionId" value="{{ section.id }}">
+        {% if entry.id %}<input type="hidden" name="entryId" value="{{ entry.id }}">{% endif %}
+        {% if craft.app.getIsMultiSite() %}<input type="hidden" name="siteId" value="{{ entry.siteId }}">{% endif %}
+    {% else %}
+        <input type="hidden" name="versionId" value="{{ entry.versionId }}">
+    {% endif %}
+
+    <div id="fields">
+        {% include "entries/_fields" with {
+            static: isVersion
+        } %}
+    </div>
+
+    {# Give plugins a chance to add other things here #}
+    {% hook "cp.entries.edit.content" %}
+</div>

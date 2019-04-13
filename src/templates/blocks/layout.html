@@ -1,0 +1,154 @@
+{% extends "_layouts/basecp" %}
+
+{# ================================================================================================================== #}
+{# ================================================================================================================== #}
+{#                                                                                                                    #}
+{# This is basically a copy of _layouts/cp with a few adjustments so it works better in an iFrame                     #}
+{# embed. Specifically,                                                                                               #}
+{#  - removed the #global-sidebar                                                                                     #}
+{#  - removed #nav-toggle (since we removed the nav)                                                                  #}
+{#  - removed the queues (since the parent page should do that for us                                                 #}
+{#                                                                                                                    #}
+{# ================================================================================================================== #}
+{# ================================================================================================================== #}
+
+{% set hasSystemIcon = CraftEdition == CraftPro and craft.rebrand.isIconUploaded %}
+
+{% set forceConfirmUnload = craft.app.session.hasFlash('error') %}
+{% set fullPageForm = (fullPageForm is defined and fullPageForm) %}
+
+{% set canUpgradeEdition = craft.app.getCanUpgradeEdition() %}
+{% set licensedEdition = craft.app.getLicensedEdition() %}
+{% set isTrial = licensedEdition is not same as(null) and licensedEdition is not same as(CraftEdition) %}
+
+{% set sidebar = (sidebar ?? block('sidebar') ?? '')|trim %}
+{% set details = (details ?? block('details') ?? '')|trim %}
+{% set crumbs = crumbs ?? null %}
+
+{% block head %}
+    {{ parent() }}
+    <style>
+        body.ltr #global-container { left: 0; }
+    </style>
+{% endblock %}
+
+{% block body %}
+    <div id="global-container">
+        <div id="main-container">
+
+            {# alerts #}
+            {% if craft.cp.areAlertsCached() %}
+                {% set alerts = craft.cp.getAlerts() %}
+                {% if alerts %}
+                    <ul id="alerts">
+                        {% for alert in craft.cp.getAlerts() %}
+                            <li>{{ alert|raw }}</li>
+                        {% endfor %}
+                    </ul>
+                {% endif %}
+            {% else %}
+                {% js %}
+                    Craft.cp.fetchAlerts();
+                {% endjs %}
+            {% endif %}
+
+            {# notifications #}
+            <div id="notifications-wrapper">
+                <div id="notifications">
+                    {% for type in ['notice', 'error'] %}
+                        {% set message = craft.app.session.getFlash(type) %}
+                        {% if message %}
+                            <div class="notification {{ type }}">{{ message }}</div>
+                        {% endif %}
+                    {% endfor %}
+                </div>
+            </div>
+
+            {# crumbs #}
+            <div id="crumbs"{% if not crumbs %} class="empty"{% endif %}>
+                {% if crumbs %}
+                    <nav>
+                        <ul>
+                            {% for crumb in crumbs %}
+                                <li><a href="{{ crumb.url }}">{{ crumb.label }}</a></li>
+                            {% endfor %}
+                        </ul>
+                    </nav>
+                {% endif %}
+            </div>
+
+            {# main #}
+            <main id="main" role="main">
+
+                {% if fullPageForm -%}
+                <form {% block mainFormAttributes %}id="main-form" method="post" accept-charset="UTF-8" data-saveshortcut{% if saveShortcutRedirect is defined %} data-saveshortcut-redirect="{{ saveShortcutRedirect|hash }}"{% endif %} data-confirm-unload novalidate{% endblock %}>
+                    {{- csrfInput() }}
+                    {%- endif %}
+
+                    {# main-header #}
+                    <header id="header">
+                        {% block header %}
+                            {% block pageTitle %}
+                                {% if title is defined and title|length %}
+                                    <h1>{{ title }}</h1>
+                                {% endif %}
+                            {% endblock %}
+                            {% block contextMenu %}{% endblock %}
+                            <div class="flex-grow"></div>
+                            {% block actionButton %}
+                                {% if fullPageForm %}
+                                    <input type="submit" class="btn submit" value="{{ 'Save'|t('app') }}">
+                                {% endif %}
+                            {% endblock %}
+                        {% endblock %}
+                    </header>
+
+                    {# main-content #}
+                    <div id="main-content" class="{% if sidebar %}has-sidebar{% endif %} {% if details %}has-details{% endif %}">
+                        {% block main %}
+                            {# sidebar #}
+                            {% if sidebar is not empty %}
+                                <a id="sidebar-toggle"><span id="selected-sidebar-item-label"></span>&nbsp;<span data-icon="downangle"></span></a>
+                                <div id="sidebar" class="sidebar">
+                                    {{ sidebar|raw }}
+                                </div>
+                            {% endif %}
+
+                            {# content-container #}
+                            <div id="content-container">
+                                {% block tabs %}
+                                    {% if tabs is defined and tabs %}
+                                        {% include "_includes/tabs" %}
+                                    {% endif %}
+                                {% endblock %}
+
+                                <div id="content">
+                                    {% block content %}
+                                        {{ content is defined ? content }}
+                                    {% endblock %}
+                                </div>
+                            </div>
+
+                            {# details #}
+                            {% if details is not empty %}
+                                <div id="details">
+                                    {{ details|raw }}
+                                </div>
+                            {% endif %}
+                        {% endblock %}
+                    </div>
+
+                    {% if fullPageForm -%}
+                </form><!-- #main-form -->
+                {%- endif %}
+            </main><!-- #main -->
+        </div><!-- #main-container -->
+    </div><!-- #global-container -->
+{% endblock %}
+
+
+{% if currentUser.can('performUpdates') and not craft.app.updates.getIsUpdateInfoCached() %}
+    {% js %}
+        Craft.cp.checkForUpdates();
+    {% endjs %}
+{% endif %}

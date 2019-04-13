@@ -1,0 +1,235 @@
+<style>
+    .craft-layout-builder-field-picker,
+    .craft-layout-builder-field-picker * {
+        box-sizing: border-box;
+    }
+    .craft-layout-builder-field-picker {
+        position: fixed;
+        top: 0;
+        right: 0;
+        width: 350px;
+        height: 100vh;
+        background: #fff;
+        box-shadow: 0 0 10px rgba(0,0,0,0.2);
+        z-index: 100;
+        padding: 24px;
+    }
+    .craft-layout-builder-grid {
+        display: grid;
+        grid-gap: 24px;
+    }
+    .craft-layout-builder-layout {
+        /*border: 1px solid rgba(0, 0, 20, 0.1);*/
+        /*border-radius: 2px;*/
+        position: relative;
+        /*padding: 10px;*/
+        /*background-image: url(http://dev.craftql.com/cpresources/ef13988d/images/fieldlayoutform-bg_2x.png);*/
+        /*background-size: 30px 30px;*/
+    }
+    .craft-layout-builder-layout-title {
+        font-size: 11px;
+        color: #666;
+        font-weight: bold;
+    }
+    .craft-layout-builder-cell {
+        /*border: 1px solid rgba(0, 0, 20, 0.1);*/
+        /*border-radius: 2px;*/
+        position: relative;
+        /*padding: 24px 8px 5px;*/
+        background: #fff;
+    }
+    .craft-layout-builder-cell.empty {
+        /*text-align: center;*/
+        /*padding: 24px;*/
+        /*border: 1px dashed #ccc;*/
+        /*padding: 10px;*/
+    }
+    .craft-layout-builder-cell-title {
+        /*position: absolute;*/
+        /*top: 3px;*/
+        /*left: 8px;*/
+        font-size: 11px;
+        color: #999;
+    }
+    .craft-layout-builder-active-picker {
+        border: 1px solid #0D99F2;
+    }
+    .craft-layout-builder-block-editor {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh;
+        z-index: 101;
+    }
+    .craft-layout-builder-block-editor-shade {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0,0,0,0.7);
+    }
+    .craft-layout-builder-block-editor-screen {
+        position: absolute;
+        top: 0;
+        left: 300px;
+        background: #fff;
+        height: 100%;
+        width: calc(100vw - 300px);
+        box-shadow: 0 0 30px rgba(0,0,0,0.3);
+    }
+    .craft-layout-builder-blocks.empty {
+        /*border: 1px dashed rgba(0, 0, 20, 0.1);*/
+        background-color: rgba(0, 0, 20, 0.05);
+        text-shadow: 0 1px 0 #fff;
+    }
+    .craft-layout-builder-block-placeholder {
+        padding: 5px 10px;
+        color: #ccc;
+    }
+    .craft-layout-builder-block {
+        /*background: rgba(0, 0, 20, 0.1);*/
+        border-radius: 2px;
+        padding: 5px;
+        border: 1px solid rgba(0, 0, 20, 0.1);
+        /*box-shadow: 0 1px 2px rgba(0,0,0,0.2);*/
+    }
+    .craft-layout-builder-block img {
+        position: relative;
+        top: 3px;
+        margin-right: 10px;
+    }
+    .craft-layout-builder-block-title {
+        color: inherit;
+    }
+    .craft-layout-builder-spacing > * + * {
+        margin-top: 10px;
+    }
+    #craft-layout-builder-drop-target {
+        position: fixed;
+        top: 0;
+        left: 0;
+        height: 4px;
+        width: 200px;
+        background: #bf503f;
+        border-radius: 2px;
+        z-index: 100;
+        transform: translateY(-50%);
+        /*transition: width 0.5s;*/
+    }
+    button.btn {
+        font-size: inherit;
+    }
+</style>
+
+<div data-layout-builder-field data-handle="{{ field.handle }}" data-layouts='{{ value|default('[]') }}'></div>
+
+{#<div class="rows">
+    {% for row in rows %}
+        <div style="background-image: url(/cpresources/f323ae84/images/fieldlayoutform-bg.png); border: 1px solid rgba(0,0,0,0.1); margin: 10px 0; border-radius: 5px; overflow: hidden;">
+            <div style="background:#ebedef; border-bottom: 1px solid #e3e5e8; padding: 5px;">
+                <div class="checkbox" title="Select"></div>
+                Row {{ loop.index }}
+            </div>
+            <div style="padding: 24px;">
+                <div class="btn add icon dashed" data-layoutbuilder-add-element>Add an element</div>
+            </div>
+        </div>
+    {% endfor %}
+</div>
+<div class="buttons last">
+    <div class="btngroup">
+        <div class="btn add icon" data-layoutbuilder-add-row data-elementid="{{ element.id }}" data-fieldid="{{ field.id }}">Add a row</div>
+    </div>
+</div>
+
+{% js %}
+    $(document).on('click', '[data-layoutbuilder-add-row]', function (event) {
+        $.post('{{ actionUrl('layoutbuilder/row/store') }}', {
+            'elementId': $(event.target).data('elementid'),
+            'fieldId': $(event.target).data('fieldid')
+        }, function (data) {
+            //console.log('got back', data);
+        });
+    });
+
+    $(document).on('click', '[data-layoutbuilder-add-element]', function (event) {
+        $.post('{{ actionUrl('layoutbuilder/element/new') }}', {
+        }, function (data) {
+            var style = [
+                'position: fixed;',
+                'top: 0;',
+                'right: 0;',
+                'height: 100%;',
+                'width: 75%;',
+                'background: #fff;',
+                'z-index: 100;',
+                'box-shadow: 0 25px 100px rgba(0, 0, 0, 0.5);',
+                'overflow: auto;',
+                'box-sizing: border-box;'
+            ];
+            $(document.body).append('<div class="" style="'+style.join('')+'">'+data+'</div>');
+        });
+    });
+
+    $(document).on('beforeSaveShortcut', function (event) {
+        alert('foo bar');
+    });
+{% endjs %}
+#}
+
+{#
+<input type="hidden" name="fields[layoutBuilder]" value="">
+
+<div style="display: grid; grid-template-columns: 2fr 1fr; grid-gap: 24px;">
+    <div id="{{ id }}" class="fieldlayoutform elements" style="outline: 1px solid #e3e5e8; min-height: 100px;">
+        <div id="foo-entry"
+             class=""
+             data-type="craft\elements\Entry"
+             data-id="9"
+             data-site-id="1"
+             data-status="live"
+             data-label="My Awesome Entry"
+             data-url="http://dev.craftql.com/stories/foo-1"
+             data-level=""
+             data-editable=""
+             tabindex="0"
+             style="background: rgba(255,255,255,0.75); border: 1px solid #2f1fb5; padding: 10px; cursor: move;">
+            <p><strong>Hero Carousel</strong><br>Entry 123</p>
+        </div>
+        <div style="margin-top: 24px;">
+            <div class="btn add icon dashed">Add</div>
+        </div>
+    </div>
+    <div class="fieldlayoutform" style="outline: 1px solid #e3e5e8; min-height: 100px;">
+        <div style="background: rgba(255,255,255,0.75); border: 1px solid #2f1fb5; padding: 10px; cursor: move;">
+            <p><strong>Cta</strong><br>Entry 123</p>
+        </div>
+    </div>
+</div>
+
+{% js %}
+    $('#fields-{{ id }} .btn').on('click', function () {
+        Craft.createElementSelectorModal('craft\\elements\\Entry', {
+            closeOtherModals: false,
+            storageKey: 'fields.foo.123',
+            sources: '*',
+            criteria: {enabledForSite: null, siteId: 1},
+            multiSelect: true,
+            showSiteMenu: false,
+            disabledElementIds: [],
+            onSelect: function (elements) {
+                console.log('selected', elements);
+            }
+        });
+    });
+
+    if (!window.once) {
+        $(document).on('dblclick', '#fields-foo-entry', function () {
+            Craft.createElementEditor('craft\\elements\\Entry', this);
+        });
+        window.once = true;
+    }
+{% endjs %}
+#}

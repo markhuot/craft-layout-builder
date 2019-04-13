@@ -1,0 +1,26 @@
+{% extends "_layouts/cp" %}
+
+{% set title %}{{ blockType.id|default(false) ? 'Edit' : 'Create' }} Block Type{% endset %}
+{% set fullPageForm = true %}
+{% set crumbs = [
+    {url: '/admin/settings', label: 'Settings'},
+    {url: '/admin/settings/plugins', label: 'Plugins'},
+    {url: '/admin/settings/plugins/layoutbuilder', label: 'Layout Builder'},
+] %}
+
+{% block content %}
+    <input type="hidden" name="blockType[id]" value="{{ blockType.id|default('') }}">
+
+    <p>
+        <label>Title</label>
+        <input type="text" name="blockType[title]" value="{{ blockType.title|default('') }}">
+    </p>
+    <p>
+        <label>Icon</label>
+        <input type="text" name="blockType[icon]" value="{{ blockType.icon|default('') }}">
+    </p>
+
+    {% include "_includes/fieldlayoutdesigner" with {
+        fieldLayout: craft.app.fields.getLayoutById(blockType.fieldLayoutId|default(false))
+    } only %}
+{% endblock %}

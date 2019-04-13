@@ -7,12 +7,17 @@
             "email": "mark@markhuot.com"
         }
     ],
-    "require": {},
+    "autoload": {
+        "psr-4": {
+            "markhuot\\layoutbuilder\\": "src/"
+        }
+    },
     "extra": {
         "name": "Layout Builder",
         "handle": "layoutbuilder",
         "developer": "Mark Huot",
         "developerUrl": "https://www.github.com/markhuot",
-        "class": "markhuot\\LayoutBuilder\\"
+        "class": "markhuot\\layoutbuilder\\LayoutBuilder",
+        "components": {}
     }
 }

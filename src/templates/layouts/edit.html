@@ -1,0 +1,67 @@
+{% extends "_layouts/cp" %}
+
+{% set title %}{{ layout.id|default(false) ? 'Edit' : 'Create' }} Layout{% endset %}
+{% set fullPageForm = true %}
+{% set crumbs = [
+    {url: '/admin/settings', label: 'Settings'},
+    {url: '/admin/settings/plugins', label: 'Plugins'},
+    {url: '/admin/settings/plugins/layoutbuilder', label: 'Layout Builder'},
+] %}
+
+{% block content %}
+    <input type="hidden" name="layout[id]" value="{{ layout.id|default('') }}">
+
+    <style>
+        .rows {
+            display: grid;
+            grid-gap: 24px;
+        }
+        .row {
+            display: grid;
+            grid-gap: 24px;
+            grid-template-columns: auto 100px;
+            grid-template-rows: auto;
+        }
+        .cells {
+            display: grid;
+            grid-gap: 24px;
+        }
+        .cell {
+            flex-grow: 1;
+            border: 2px dashed #ccc;
+            border-radius: 5px;
+            padding: 5px;
+        }
+        .add {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #eee;
+            border-radius: 5px;
+            color: #fff;
+            font-size: 24px;
+            font-weight: bold;
+            transition: background 0.2s;
+        }
+        .add:hover {
+            background: #333;
+            text-decoration: none;
+        }
+    </style>
+    <p>
+        <label>Title</label>
+        <input type="text" name="layout[title]" value="{{ layout.title|default('') }}">
+    </p>
+    <p>
+        <label>Icon</label>
+        <input type="text" name="layout[icon]" value="{{ layout.icon|default('') }}">
+    </p>
+    <p>
+        <label>Custom CSS</label>
+        <textarea name="layout[css]">{{ layout.css|default('') }}</textarea>
+    </p>
+    <div class="layoutbuilder">
+        <label>Layout</label>
+        <div data-layout-builder="{{ layout.cells|default('[]') }}"></div>
+    </div>
+{% endblock %}
