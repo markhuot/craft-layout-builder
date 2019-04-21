@@ -23,6 +23,8 @@ class LayoutBuilderAssetBundle extends AssetBundle {
         $this->css = [
             // 'styles.css',
             // '//cdn.jsdelivr.net/npm/tailwindcss/dist/utilities.min.css',
+            'css/icon-picker.css',
+            'css/utilities.css',
         ];
 
         parent::init();

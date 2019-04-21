@@ -16,7 +16,10 @@ class LayoutsController extends Controller {
     function actionStore() {
         $layout = new Layout;
         $layout->title = \Craft::$app->request->getParam('layout.title');
+        $layout->icon = \Craft::$app->request->getParam('layout.icon');
         $layout->cells = json_encode(\Craft::$app->request->getParam('layout.cells'));
+        $layout->useCustomCss = \Craft::$app->request->getParam('layout.useCustomCss');
+        $layout->customCss = \Craft::$app->request->getParam('layout.customCss');
         $layout->save();
 
         \Craft::$app->getSession()->setNotice('Layout saved');
@@ -33,7 +36,10 @@ class LayoutsController extends Controller {
     function actionUpdate($layoutId) {
         $layout = Layout::findOne(['id' => $layoutId]);
         $layout->title = \Craft::$app->request->getParam('layout.title');
+        $layout->icon = \Craft::$app->request->getParam('layout.icon');
         $layout->cells = json_encode(\Craft::$app->request->getParam('layout.cells'));
+        $layout->useCustomCss = \Craft::$app->request->getParam('layout.useCustomCss');
+        $layout->customCss = \Craft::$app->request->getParam('layout.customCss');
         $layout->save();
 
         \Craft::$app->getSession()->setNotice('Layout saved');

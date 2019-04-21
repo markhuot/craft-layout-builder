@@ -44,6 +44,17 @@
         /*border: 1px dashed #ccc;*/
         /*padding: 10px;*/
     }
+    .craft-layout-builder-cell-icon {
+        fill: #999;
+        margin-left: 5px;
+        margin-right: 10px;
+        display: inline-block;
+        width: 18px;
+        height: 18px;
+        position: relative;
+        bottom: -3px;
+        cursor: move;
+    }
     .craft-layout-builder-cell-title {
         /*position: absolute;*/
         /*top: 3px;*/
@@ -80,8 +91,8 @@
         box-shadow: 0 0 30px rgba(0,0,0,0.3);
     }
     .craft-layout-builder-blocks.empty {
-        /*border: 1px dashed rgba(0, 0, 20, 0.1);*/
         background-color: rgba(0, 0, 20, 0.05);
+        border: 1px solid rgba(0, 0, 20, 0.05);
         text-shadow: 0 1px 0 #fff;
     }
     .craft-layout-builder-block-placeholder {
@@ -89,6 +100,7 @@
         color: #ccc;
     }
     .craft-layout-builder-block {
+        background-color: white;
         /*background: rgba(0, 0, 20, 0.1);*/
         border-radius: 2px;
         padding: 5px;
@@ -106,17 +118,31 @@
     .craft-layout-builder-spacing > * + * {
         margin-top: 10px;
     }
+    .craft-layout-builder-drop-target,
     #craft-layout-builder-drop-target {
         position: fixed;
-        top: 0;
+        top: -100px;
         left: 0;
         height: 4px;
         width: 200px;
-        background: #bf503f;
+        /*background: black;*/
         border-radius: 2px;
         z-index: 100;
         transform: translateY(-50%);
+        display: none;
+        animation: pulse 0.75s infinite;
         /*transition: width 0.5s;*/
+    }
+    @keyframes pulse {
+        0% {
+            transform: translateY(-50%) scaleX(1);
+        }
+        50% {
+            transform: translateY(-50%) scaleX(1.05);
+        }
+        100% {
+            transform: translateY(-50%) scaleX(1);
+        }
     }
     button.btn {
         font-size: inherit;

@@ -5,9 +5,11 @@
     "axios": "^0.18.0",
     "babel-loader": "^8.0.5",
     "eventemitter2": "^5.0.1",
+    "loader-utils": "^1.2.3",
     "prop-types": "^15.7.2",
     "react": "^16.8.4",
     "react-dom": "^16.8.4",
+    "react-svg-loader": "^2.1.0",
     "uuid": "^3.3.2",
     "webpack": "^4.29.6",
     "webpack-cli": "^3.3.0"

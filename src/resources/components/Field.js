@@ -11,7 +11,7 @@ const Field = props => {
 
     const toggleElementPicker = event => {
         event.preventDefault()
-        picker.toggle()
+        picker.toggle('layouts')
     }
 
     // TODO, this should probably be inside a useEffect because it hangs around in memory after the Field re-renders
@@ -23,7 +23,7 @@ const Field = props => {
 
     return <div className={`craft-layout-builder-grid ${picker.active ? 'craft-layout-builder-active-picker' : ''}`}>
         {layouts.length === 0 && <div className="craft-layout-builder-cell empty"><a href="#" onClick={toggleElementPicker}>Pick a layout</a> to get started.</div>}
-        {layouts.map((layout, index) => <FieldLayout key={layout.id} index={index} {...layout}/>)}
+        {layouts.map((layout, index) => <FieldLayout key={layout.id} index={index} fieldHandle={props.handle} {...layout}/>)}
         {layouts.length > 0 && <div className="btngroup">
             <button className="btn add icon" onClick={toggleElementPicker}>Add a Layout</button>
         </div>}

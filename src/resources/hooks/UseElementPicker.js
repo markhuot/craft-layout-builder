@@ -16,8 +16,8 @@ export default function useElementPicker() {
     const bus = useContext(BusContext)
     const [isActivePickerTarget, setIsActivePickerTarget] = useState(false)
 
-    const show = () => {
-        bus.emit('showPicker')
+    const show = (type) => {
+        bus.emit('showPicker', type)
         bus.emit('willSetActivePickerTarget')
         setIsActivePickerTarget(true)
     }
@@ -27,8 +27,8 @@ export default function useElementPicker() {
         setIsActivePickerTarget(false)
     }
 
-    const toggle = () => {
-        isActivePickerTarget ? hide() : show()
+    const toggle = (type) => {
+        isActivePickerTarget ? hide() : show(type)
     }
 
     useEffect(() => {

@@ -7,9 +7,6 @@ use craft\helpers\StringHelper;
 
 class Layout extends ActiveRecord {
 
-    public $icon;
-    public $css;
-
     static function tableName() {
         return '{{%layoutbuilder_layouts}}';
     }

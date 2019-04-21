@@ -25,6 +25,13 @@ module.exports = {
                     loader: 'babel-loader',
                     options: JSON.parse(fs.readFileSync('./.babelrc'))
                 },
+            },
+            {
+                test: /\.svg$/,
+                exclude: /(node_modules|bower_components)/,
+                use: {
+                    loader: 'react-svg-loader'
+                },
             }
         ]
     }

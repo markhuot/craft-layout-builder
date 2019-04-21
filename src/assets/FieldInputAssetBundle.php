@@ -23,6 +23,7 @@ class FieldInputAssetBundle extends AssetBundle {
         $this->css = [
             // 'styles.css',
             // '//cdn.jsdelivr.net/npm/tailwindcss/dist/utilities.min.css',
+            'css/utilities.css',
         ];
 
         parent::init();

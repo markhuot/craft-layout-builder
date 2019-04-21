@@ -1,4 +1,5 @@
 {% extends "_layouts/cp" %}
+{% import "_includes/forms" as forms %}
 
 {% set title %}{{ layout.id|default(false) ? 'Edit' : 'Create' }} Layout{% endset %}
 {% set fullPageForm = true %}
@@ -12,56 +13,41 @@
     <input type="hidden" name="layout[id]" value="{{ layout.id|default('') }}">
 
     <style>
-        .rows {
-            display: grid;
-            grid-gap: 24px;
-        }
-        .row {
-            display: grid;
-            grid-gap: 24px;
-            grid-template-columns: auto 100px;
-            grid-template-rows: auto;
-        }
         .cells {
             display: grid;
             grid-gap: 24px;
         }
+
         .cell {
-            flex-grow: 1;
-            border: 2px dashed #ccc;
-            border-radius: 5px;
-            padding: 5px;
-        }
-        .add {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            background: #eee;
-            border-radius: 5px;
-            color: #fff;
-            font-size: 24px;
-            font-weight: bold;
-            transition: background 0.2s;
-        }
-        .add:hover {
-            background: #333;
-            text-decoration: none;
+            border: 1px solid rgba(0, 0, 20, 0.1);
+            border-radius: 2px;
+            padding: 15px;
+            background: rgb(240, 247, 253);
+            position: relative;
         }
     </style>
-    <p>
-        <label>Title</label>
-        <input type="text" name="layout[title]" value="{{ layout.title|default('') }}">
-    </p>
-    <p>
-        <label>Icon</label>
-        <input type="text" name="layout[icon]" value="{{ layout.icon|default('') }}">
-    </p>
-    <p>
-        <label>Custom CSS</label>
-        <textarea name="layout[css]">{{ layout.css|default('') }}</textarea>
-    </p>
-    <div class="layoutbuilder">
-        <label>Layout</label>
-        <div data-layout-builder="{{ layout.cells|default('[]') }}"></div>
+
+    {{ forms.textField({
+        label: 'Title',
+        name: 'layout[title]',
+        value: layout.title|default(''),
+        first: true,
+        autofocus: true
+    }) }}
+
+    <div class="field first">
+        <div class="heading">
+            <label>Icon</label>
+        </div>
+        <div class="input ltr">
+            <div data-icon-picker data-name="layout[icon]" data-value="{{ layout.icon }}"></div>
+        </div>
     </div>
+
+    <hr>
+
+    <div class="layoutbuilder">
+        <div data-layout-builder data-use-custom-css="{{ layout.useCustomCss }}" data-custom-css="{{ layout.customCss }}" data-cells="{{ layout.cells|default('[]') }}"></div>
+    </div>
+
 {% endblock %}

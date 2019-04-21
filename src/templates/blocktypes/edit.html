@@ -1,4 +1,5 @@
 {% extends "_layouts/cp" %}
+{% import "_includes/forms" as forms %}
 
 {% set title %}{{ blockType.id|default(false) ? 'Edit' : 'Create' }} Block Type{% endset %}
 {% set fullPageForm = true %}
@@ -11,14 +12,22 @@
 {% block content %}
     <input type="hidden" name="blockType[id]" value="{{ blockType.id|default('') }}">
 
-    <p>
-        <label>Title</label>
-        <input type="text" name="blockType[title]" value="{{ blockType.title|default('') }}">
-    </p>
-    <p>
-        <label>Icon</label>
-        <input type="text" name="blockType[icon]" value="{{ blockType.icon|default('') }}">
-    </p>
+    {{ forms.textField({
+        label: 'Title',
+        name: 'blockType[title]',
+        value: blockType.title|default(''),
+        first: true,
+        autofocus: true
+    }) }}
+
+    <div class="field first">
+        <div class="heading">
+            <label>Icon</label>
+        </div>
+        <div class="input ltr">
+            <div data-icon-picker data-name="blockType[icon]" data-value="{{ blockType.icon|default('') }}"></div>
+        </div>
+    </div>
 
     {% include "_includes/fieldlayoutdesigner" with {
         fieldLayout: craft.app.fields.getLayoutById(blockType.fieldLayoutId|default(false))

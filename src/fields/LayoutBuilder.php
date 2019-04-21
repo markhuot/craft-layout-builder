@@ -9,6 +9,7 @@ use markhuot\layoutbuilder\assets\FieldInputAssetBundle;
 use markhuot\layoutbuilder\elements\Block;
 use markhuot\LayoutBuilder\elements\Row;
 use markhuot\layoutbuilder\records\Layout;
+use yii\db\Expression;
 use yii\db\Schema;
 
 class LayoutBuilder extends Field {
@@ -53,23 +54,26 @@ class LayoutBuilder extends Field {
             $value = json_decode($value, true);
         }
 
+        if (!is_array($value)) {
+            $value = [];
+        }
+
         foreach ($value as &$layout) {
-            $blocks = @$layout['blocks'] ?: [];
+            $allBlocks = @$layout['blocks'] ?: [];
             $layout = Layout::findOne(['uid' => $layout['uid']])->toArray();
-            foreach ($layout['cells'] as &$row) {
-                foreach ($row as &$cell) {
-                    if (isset($blocks[$cell['uid']])) {
-                        $cell['blocks'] = array_map(function ($block) {
-                            return $block->toArray();
-                        }, Block::findAll(['uid' => $blocks[$cell['uid']]]));
-                        // }, Block::findAll(['uid' => $blocks[$cell['uid']]]));
-                        // var_dump($cell['blocks']);
-                        // die;
-                    }
+            foreach ($layout['cells'] as &$cell) {
+                $blockUids = @$allBlocks[$cell['uid']];
+                if ($blockUids) {
+                    $cellBlockModels = Block::find()
+                        ->where(['{{%elements}}.uid' => $blockUids])
+                        ->orderBy([new Expression('FIELD({{%elements}}.uid, "'.implode('","', $blockUids).'")')])
+                        ->all();
+
+                    $cell['blocks'] = array_map(function ($block) {
+                        return $block->toArray();
+                    }, $cellBlockModels);
                 }
             }
-            // var_dump($layout);
-            // die;
         }
         $value = json_encode($value);
 

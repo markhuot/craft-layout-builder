@@ -25,6 +25,8 @@ class Install extends Migration
             'handle' => $this->string(),
             'icon' => $this->string()->null(),
             'cells' => $this->text(),
+            'useCustomCss' => $this->boolean(),
+            'customCss' => $this->text(),
             'dateCreated' => $this->dateTime(),
             'dateUpdated' => $this->dateTime(),
             'uid' => $this->string(),

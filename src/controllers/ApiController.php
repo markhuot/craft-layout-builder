@@ -11,11 +11,11 @@ class ApiController extends Controller {
     function actionElements() {
         $layouts = array_map(function ($layout) {
             return $layout->toArray();
-        }, Layout::find()->all());
+        }, Layout::find()->orderBy('title asc')->all());
 
         $blockTypes = array_map(function ($blockType) {
             return $blockType->toArray();
-        }, BlockType::find()->all());
+        }, BlockType::find()->orderBy('title asc')->all());
 
         return $this->asJson([
             'layouts' => $layouts,

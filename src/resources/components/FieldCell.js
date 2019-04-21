@@ -4,6 +4,7 @@ import BusContext from '../contexts/BusContext'
 import useElementPicker from '../hooks/UseElementPicker'
 import uuid from 'uuid/v4'
 import FieldBlock from "./FieldBlock";
+import DropPlaceholderContext from '../contexts/DropPlaceholderContext'
 
 const FieldCell = props => {
     const bus = useContext(BusContext)
@@ -11,11 +12,48 @@ const FieldCell = props => {
     const isEmpty = blocks.length === 0
     const blockList = useRef(null)
     const picker = useElementPicker()
+    const placeholder = useContext(DropPlaceholderContext)
+
+    const addBlock = newBlock => {
+        const newBlocks = blocks.slice()
+        newBlocks.push(newBlock)
+        setBlocks(newBlocks)
+        bus.emit('showBlockEditor', newBlock)
+    }
 
     const removeBlock = uid => {
         let newBlocks = blocks.slice()
         newBlocks = newBlocks.filter(block => block.uid !== uid)
         setBlocks(newBlocks)
+    }
+
+    const moveBlock = (movedBlock, newPlacement) => {
+        let updatingBlocks = blocks.slice()
+
+        // We need to check if the block is being reordered in the current cell
+        // because, if so, we need to move it from its old position to its new
+        // position in one motion. Otherwise React may render the addition before
+        // the removal (since UI updates are batched) and we'd end up with two of
+        // the same blocks in a cell, which we don't want (right now)
+        const existingIndex = blocks.findIndex(block => block.uid === movedBlock.uid)
+
+        // If the block doesn't exist in the current cell, then we'll fire an event
+        // and let the actual owner of the block remove it
+        if (existingIndex === -1) {
+            bus.emit('removeBlock', movedBlock.uid)
+        }
+
+        // If the block _does_ exist in the current cell, then we're moving it so
+        // we'll reorder the existing blocks and fire a single call to `setBlocks`
+        // so we don't end up with any race conditions
+        else {
+            updatingBlocks.splice(existingIndex, 1)
+            if (existingIndex < newPlacement) {
+                newPlacement--
+            }
+        }
+        updatingBlocks.splice(newPlacement, 0, movedBlock)
+        setBlocks(updatingBlocks)
     }
 
     useEffect(() => {
@@ -61,37 +99,31 @@ const FieldCell = props => {
         return () => bus.off('updateBlock', updateBlockCallback)
     })
 
-    // @TODO move this in to useElementPicker by passing setBlocks to the picker class
     picker.on('update', element => {
-        const newBlocks = blocks.slice()
-        const newBlock = {
+        addBlock({
             uid: uuid(),
             type: element,
-        }
-        newBlocks.push(newBlock)
-        setBlocks(newBlocks)
-        bus.emit('showBlockEditor', newBlock)
+        })
     })
 
+    // the placement is determined in the dragOver callback and then used later in
+    // the dropCallback. Define it here so it's accessible in both callbacks.
     let placement = 0
 
-    const removeDragDropPlaceholder = () => {
-        const el = document.getElementById('craft-layout-builder-drop-target')
-        if (el) el.parentNode.removeChild(el)
-    }
-
-    const dragDropPlaceholder = () => {
-        const el = document.getElementById('craft-layout-builder-drop-target')
-        if (el) return el
-
-        const placeholder = document.createElement('div')
-        placeholder.id = 'craft-layout-builder-drop-target'
-        document.body.appendChild(placeholder)
-        return placeholder
-    }
+    // @TODO do the below, but it causes issues with dragging in a new block from the picker
+    // get the listItems in an effect so it only fires on re-render and we aren't
+    // fetching them every time the dragOver callback is run
+    // let listItems
+    // useEffect(() => {
+    //     listItems = blockList.current.querySelectorAll('li')
+    // }, [blocks])
 
     const dragOverCallback = event => {
         const listItems = blockList.current.querySelectorAll('li')
+
+        // given the existing list items figure out which index the new element will
+        // be dropped in to based on the mouse position relative to the existing
+        // list tiems
         for (const index in [...listItems]) {
             const listItem = listItems[index]
             const top = listItem.getBoundingClientRect().top
@@ -111,108 +143,71 @@ const FieldCell = props => {
 
         // if we're hovering over ourselves then we'll bail out and let the
         // default browser action of assuming all drags are invalid continue
+        //
+        // Note: this is a weird behavior but makes sense in the wider web, it
+        // just takes some time to wrap your head around the double negative,
+        // because you're not preventing the drag you're preventing the failed
+        // drag event… it's weird
         const index = blocks.findIndex(block => event.dataTransfer.types.includes(`x-block-uid/${block.uid}`))
         if (index >= 0 && (index === placement || index === placement-1)) {
-            removeDragDropPlaceholder()
+            placeholder.hide()
             return
         }
 
         // if we're here then the drag is valid and we have to prevent the default
-        // browser function of assuming all drafts are invalid
+        // browser event of assuming all drafts are invalid
         event.preventDefault()
 
+        // if the placement is at the top of the list insert it before the first item
         if (placement === 0) {
-            const listItem = listItems[0]
-            const top = listItem.getBoundingClientRect().top
-            const left = listItem.getBoundingClientRect().left
-            const width = listItem.getBoundingClientRect().width
-            dragDropPlaceholder().style.top = (top - 5)+'px'
-            dragDropPlaceholder().style.left = (left - 5)+'px'
-            dragDropPlaceholder().style.width = (width + 10)+'px'
+            placeholder.before(listItems[0])
         }
 
+        // if the placement is between two items
         else if (listItems[placement-1] && listItems[placement]) {
-            const previousListItem = listItems[placement-1]
-            const previousTop = previousListItem.getBoundingClientRect().top
-            const previousLeft = previousListItem.getBoundingClientRect().left
-            const previousWidth = previousListItem.getBoundingClientRect().width
-            const previousHeight = previousListItem.getBoundingClientRect().height
-            const previousBottom = previousTop + previousHeight
-            const nextListItem = listItems[placement]
-            const nextTop = nextListItem.getBoundingClientRect().top
-            const spacing = nextTop - previousBottom
-
-            dragDropPlaceholder().style.top = (previousBottom + (spacing/2))+'px'
-            dragDropPlaceholder().style.left = (previousLeft - 5)+'px'
-            dragDropPlaceholder().style.width = (previousWidth + 10)+'px'
+            placeholder.between(listItems[placement-1], listItems[placement])
         }
 
+        // if the placement is at the end of the list
         else {
-            const listItem = listItems[placement-1]
-            const top = listItem.getBoundingClientRect().top
-            const left = listItem.getBoundingClientRect().left
-            const width = listItem.getBoundingClientRect().width
-            const height = listItem.getBoundingClientRect().height
-
-            dragDropPlaceholder().style.top = (top + height + 5)+'px'
-            dragDropPlaceholder().style.left = (left - 5)+'px'
-            dragDropPlaceholder().style.width = (width + 10)+'px'
+            placeholder.after(listItems[placement-1])
         }
-
-        // TODO make the width increase (pulse) each time the placeholder moves
-        // const listItem = listItems[0]
-        // const width = listItem.getBoundingClientRect().width
-        // dragDropPlaceholder().style.width = (width + 10)+'px'
     }
 
     const dragLeaveCallback = event => {
-        // event.target.style.outline = ''
+
     }
 
     const dropCallback = event => {
         event.preventDefault()
-        event.dataTransfer.dropEffect = 'reorder'
 
-        // event.target.style.outline = ''
+        const action = event.dataTransfer.getData('x-block/action')
+        const block = JSON.parse(event.dataTransfer.getData('x-block/json'))
 
-        let updatingBlocks = blocks.slice()
-        const blockTypeHandle = event.dataTransfer.getData('x-block/__type')
-        const newBlock = JSON.parse(event.dataTransfer.getData(`x-block/${blockTypeHandle}`))
-
-        // We need to check if the block is being reordered in the current cell
-        // because, if so, we need to move it from its old position to its new
-        // position in one motion. Otherwise React may render the addition before
-        // the removal (since UI updates are batched) and we'd end up with two of
-        // the same blocks in a cell, which we don't want (right now)
-        const existingIndex = blocks.findIndex(block => block.uid === newBlock.uid)
-        if (existingIndex === -1) {
-            bus.emit('removeBlock', newBlock.uid)
+        if (action === 'move') {
+            moveBlock(block, placement)
         }
-        else {
-            updatingBlocks.splice(existingIndex, 1)
-            if (existingIndex < placement) {
-                placement--
-            }
-        }
-        updatingBlocks.splice(placement, 0, newBlock)
-        setBlocks(updatingBlocks)
 
-        removeDragDropPlaceholder()
+        if (action === 'create') {
+            addBlock(block)
+        }
+
+        placeholder.hide()
     }
 
     const dragEndCallback = event => {
         event.preventDefault()
-
-        removeDragDropPlaceholder()
+        placeholder.hide()
     }
 
-    return <div className={`craft-layout-builder-cell ${picker.active ? 'craft-layout-builder-active-picker' : ''}`} onDragOver={dragOverCallback} onDragLeave={dragLeaveCallback} onDragEnd={dragEndCallback} onDrop={dropCallback}>
+    return <div className={`craft-layout-builder-cell ${picker.active ? 'craft-layout-builder-active-picker' : ''}`} data-uid={props.uid} onDragOver={dragOverCallback} onDragLeave={dragLeaveCallback} onDragEnd={dragEndCallback} onDrop={dropCallback}>
+        {props.customCss && <style dangerouslySetInnerHTML={{__html:`.craft-layout-builder-cell[data-uid="${props.uid}"] {${props.customCss}}`}}/>}
         <p className="craft-layout-builder-cell-title">{props.title}</p>
         <ul ref={blockList} className={`craft-layout-builder-spacing craft-layout-builder-blocks ${isEmpty && 'empty'}`}>
-            {blocks.map(block => <FieldBlock key={block.uid} layoutIndex={props.layoutIndex} cellUid={props.uid} {...block}/>)}
+            {blocks.map(block => <FieldBlock key={block.uid} fieldHandle={props.fieldHandle} layoutIndex={props.layoutIndex} cellUid={props.uid} {...block}/>)}
             {blocks.length === 0 && <li className="craft-layout-builder-block-placeholder">Empty</li>}
         </ul>
-        <p><button onClick={e => {e.preventDefault(); picker.toggle()}}>Add</button></p>
+        <p><button onClick={e => {e.preventDefault(); picker.toggle('blocks')}}>Add</button></p>
     </div>
 }
 

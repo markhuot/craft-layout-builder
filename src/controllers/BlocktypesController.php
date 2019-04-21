@@ -3,12 +3,14 @@
 namespace markhuot\layoutbuilder\controllers;
 
 use craft\web\Controller;
+use markhuot\layoutbuilder\assets\LayoutBuilderAssetBundle;
 use markhuot\layoutbuilder\elements\Block;
 use markhuot\layoutbuilder\records\BlockType;
 
 class BlocktypesController extends Controller {
 
     function actionCreate() {
+        $this->view->registerAssetBundle(LayoutBuilderAssetBundle::class);
         return $this->renderTemplate('layoutbuilder/blocktypes/edit');
     }
 
@@ -29,6 +31,7 @@ class BlocktypesController extends Controller {
     }
 
     function actionShow($blockTypeId) {
+        $this->view->registerAssetBundle(LayoutBuilderAssetBundle::class);
         $blockType = BlockType::findOne(['id' => $blockTypeId]);
 
         return $this->renderTemplate('layoutbuilder/blocktypes/edit', [

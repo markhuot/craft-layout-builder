@@ -4,39 +4,34 @@ import PropTypes from 'prop-types'
 import axios from 'axios'
 import FieldPickerButton from './FieldPickerButton'
 import BusContext from '../contexts/BusContext'
+import SearchBox from "./SearchBox"
 
-const Layouts = props => {
-    return <React.Fragment>
-        <h2>Layouts</h2>
-        <ul>
-            {props.layouts.map(layout => <li key={layout.id}><FieldPickerButton type="layout" {...layout}/></li>)}
+const Section = props => {
+    return <div>
+        <h2 className="clb-text-600 clb-text-sm clb-text-gray">{props.label}</h2>
+        <ul className="clb-grid clb-grid-gap clb-justify-items-stretch" style={{'--grid-template-columns': 'repeat(2, 1fr)'}}>
+            {props.elements.map(element => <li key={element.id}><FieldPickerButton type={props.type} {...element}/></li>)}
         </ul>
-    </React.Fragment>
-}
-
-const Blocks = props => {
-    return <React.Fragment>
-        <h2>Blocks</h2>
-        <ul>
-            {props.blockTypes.map(blockType => <li key={blockType.id}><FieldPickerButton type="block" {...blockType}/></li>)}
-        </ul>
-    </React.Fragment>
+    </div>
 }
 
 const FieldPicker = props => {
-    // const [sender, setSender] = useState({})
     const [isHidden, setIsHidden] = useState(true)
     const [elements, setElements] = useState({layouts: [], blockTypes: []})
+    const [type, setType] = useState(false)
     const bus = useContext(BusContext)
 
     useEffect(() => {
-        const showPickerCallback = event => setIsHidden(false)
+        const showPickerCallback = type => {
+            setType(type)
+            setIsHidden(false)
+        }
         bus.on('showPicker', showPickerCallback)
 
-        const hidePickerCallback = event => setIsHidden(true)
+        const hidePickerCallback = () => setIsHidden(true)
         bus.on('hidePicker', hidePickerCallback)
 
-        const togglePickerCallback = event => setIsHidden(!isHidden)
+        const togglePickerCallback = type => setIsHidden(!isHidden)
         bus.on('togglePicker', togglePickerCallback)
 
         return () => {
@@ -55,16 +50,11 @@ const FieldPicker = props => {
         return null
     }
 
-    return <div className="craft-layout-builder-field-picker">
-        <h2>Pick an Element</h2>
-        {!props.hideLayouts && <Layouts layouts={elements.layouts}/>}
-        {!props.hideBlocks && <Blocks blockTypes={elements.blockTypes}/>}
+    return <div className="craft-layout-builder-field-picker clb-spacing-xl">
+        <SearchBox/>
+        <Section type="layouts" label="Layouts" elements={elements.layouts}/>
+        <Section type="blocks" label="Block Types" elements={elements.blockTypes}/>
     </div>
-}
-
-FieldPicker.propTypes = {
-    hideLayouts: PropTypes.bool,
-    hideBlocks: PropTypes.bool
 }
 
 export default FieldPicker
