@@ -4,7 +4,7 @@ import icons from './Icons'
 
 const IconPicker = props => {
     const [showModal, setShowModal] = useState(false)
-    const [iconKey, setIconKey] = useState(props.value || false)
+    const [iconKey, setIconKey] = useState(props.value || './media/image.svg')
     const [offset, setOffset] = useState({})
     const el = useRef(null)
 

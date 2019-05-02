@@ -1,8 +1,7 @@
-import React, { useState, useEffect, useContext, useRef, forwardRef } from 'react'
+import React, { useState, useEffect, useContext, useRef, forwardRef, createRef, useCallback } from 'react'
 import PropTypes from 'prop-types'
 import BusContext from '../contexts/BusContext'
 import useElementPicker from '../hooks/UseElementPicker'
-import uuid from 'uuid/v4'
 import FieldBlock from "./FieldBlock";
 import DropPlaceholderContext from '../contexts/DropPlaceholderContext'
 
@@ -11,50 +10,67 @@ const FieldCell = props => {
     const [blocks, setBlocks] = useState(props.blocks || [])
     const isEmpty = blocks.length === 0
     const blockList = useRef(null)
+    const addButton = useRef(null)
     const picker = useElementPicker()
     const placeholder = useContext(DropPlaceholderContext)
+    const cellKey = `${props.layoutIndex}.${props.cellIndex}`
 
-    const addBlock = newBlock => {
+    const addBlock = (newBlock, placement) => {
+        if (!placement) {
+            placement = blocks.length
+        }
+
         const newBlocks = blocks.slice()
-        newBlocks.push(newBlock)
+        newBlocks.splice(placement, 0, newBlock)
         setBlocks(newBlocks)
-        bus.emit('showBlockEditor', newBlock)
+
+        if (newBlock.id === null) {
+            bus.emit('showBlockEditor', newBlock)
+        }
     }
 
     const removeBlock = uid => {
+        // no need to mess with state if the block to be removed isn't
+        // even a part of this cell
+        if (!blocks.map(block => block.uid).includes(uid)) {
+            return
+        }
+
         let newBlocks = blocks.slice()
         newBlocks = newBlocks.filter(block => block.uid !== uid)
         setBlocks(newBlocks)
     }
 
-    const moveBlock = (movedBlock, newPlacement) => {
-        let updatingBlocks = blocks.slice()
-
-        // We need to check if the block is being reordered in the current cell
-        // because, if so, we need to move it from its old position to its new
-        // position in one motion. Otherwise React may render the addition before
-        // the removal (since UI updates are batched) and we'd end up with two of
-        // the same blocks in a cell, which we don't want (right now)
-        const existingIndex = blocks.findIndex(block => block.uid === movedBlock.uid)
-
-        // If the block doesn't exist in the current cell, then we'll fire an event
-        // and let the actual owner of the block remove it
-        if (existingIndex === -1) {
-            bus.emit('removeBlock', movedBlock.uid)
+    const removeBlockByIndex = index => {
+        let newBlocks = blocks.slice()
+        newBlocks.splice(index, 1)
+        setBlocks(newBlocks)
+        if (newBlocks.length) {
+            const focusIndex = index > newBlocks.length - 1 ? newBlocks.length - 1 : index
+            blockList.current.childNodes[focusIndex].focus()
         }
-
-        // If the block _does_ exist in the current cell, then we're moving it so
-        // we'll reorder the existing blocks and fire a single call to `setBlocks`
-        // so we don't end up with any race conditions
         else {
-            updatingBlocks.splice(existingIndex, 1)
-            if (existingIndex < newPlacement) {
-                newPlacement--
-            }
+            addButton.current.focus()
         }
-        updatingBlocks.splice(newPlacement, 0, movedBlock)
-        setBlocks(updatingBlocks)
     }
+
+    const moveBlockByIndex = (oldIndex, newIndex) => {
+        const newBlocks = blocks.slice()
+        if (newIndex < 0) { newIndex = 0 }
+        if (newIndex > blocks.length - 1) { newIndex = blocks.length - 1 }
+        newBlocks.splice(newIndex, 0, newBlocks.splice(oldIndex, 1)[0])
+        setBlocks(newBlocks)
+        blockList.current.childNodes[newIndex].focus()
+    }
+
+    useEffect(() => {
+        const removeBlockFromKeyCallback = index => {
+            removeBlockByIndex(index)
+        }
+
+        bus.on(`removeBlockFromKey${cellKey}`, removeBlockFromKeyCallback)
+        return () => bus.off(`removeBlockFromKey${cellKey}`, removeBlockFromKeyCallback)
+    })
 
     useEffect(() => {
         const removeBlockCallback = uid => {
@@ -69,7 +85,7 @@ const FieldCell = props => {
 
     useEffect(() => {
         const cancelBlockEditorCallback = blockToRemove => {
-            if (typeof blockToRemove.id === 'undefined') {
+            if (blockToRemove.id === null) {
                 removeBlock(blockToRemove.uid)
             }
         }
@@ -99,11 +115,9 @@ const FieldCell = props => {
         return () => bus.off('updateBlock', updateBlockCallback)
     })
 
-    picker.on('update', element => {
-        addBlock({
-            uid: uuid(),
-            type: element,
-        })
+    picker.on('update', newBlock => {
+        addBlock(newBlock)
+        bus.emit('showBlockEditor', newBlock)
     })
 
     // the placement is determined in the dragOver callback and then used later in
@@ -148,7 +162,7 @@ const FieldCell = props => {
         // just takes some time to wrap your head around the double negative,
         // because you're not preventing the drag you're preventing the failed
         // drag event… it's weird
-        const index = blocks.findIndex(block => event.dataTransfer.types.includes(`x-block-uid/${block.uid}`))
+        const index = blocks.findIndex((block, blockIndex) => event.dataTransfer.types.includes(`x-block-key/${props.layoutIndex}.${props.cellIndex}.${blockIndex}`))
         if (index >= 0 && (index === placement || index === placement-1)) {
             placeholder.hide()
             return
@@ -182,14 +196,21 @@ const FieldCell = props => {
         event.preventDefault()
 
         const action = event.dataTransfer.getData('x-block/action')
+        const [previousLayout, previousCell, previousIndex] = event.dataTransfer.getData('x-block/key').split('.')
         const block = JSON.parse(event.dataTransfer.getData('x-block/json'))
 
         if (action === 'move') {
-            moveBlock(block, placement)
+            if (`${previousLayout}.${previousCell}` === cellKey) {
+                moveBlockByIndex(previousIndex, placement)
+            }
+            else {
+                bus.emit(`removeBlockFromKey${previousLayout}.${previousCell}`, previousIndex)
+                addBlock(block, placement)
+            }
         }
 
         if (action === 'create') {
-            addBlock(block)
+            addBlock(block, placement)
         }
 
         placeholder.hide()
@@ -197,17 +218,61 @@ const FieldCell = props => {
 
     const dragEndCallback = event => {
         event.preventDefault()
-        placeholder.hide()
     }
 
-    return <div className={`craft-layout-builder-cell ${picker.active ? 'craft-layout-builder-active-picker' : ''}`} data-uid={props.uid} onDragOver={dragOverCallback} onDragLeave={dragLeaveCallback} onDragEnd={dragEndCallback} onDrop={dropCallback}>
+    const getIndex = element => {
+        let index = 0
+        let el = event.target.previousSibling
+        while (el) {
+            index++
+            el = el.previousSibling
+        }
+        return index
+    }
+
+    const keyDownCallback = event => {
+        const keyCode = event.keyCode
+        switch (keyCode) {
+            case 38: /* up */
+            case 40: /* down */
+                event.preventDefault()
+                break
+            case 8: /* delete */
+                event.preventDefault()
+                break
+        }
+    }
+
+    const keyUpCallback = event => {
+        const keyCode = event.keyCode
+        const currentIndex = getIndex(event.target)
+        switch (keyCode) {
+            case 38: /* up */
+                moveBlockByIndex(currentIndex, currentIndex-1)
+                break
+            case 40: /* down */
+                moveBlockByIndex(currentIndex, currentIndex+1)
+                break
+            case 8: /* delete */
+                removeBlockByIndex(currentIndex)
+                break
+        }
+    }
+
+    return <div className="craft-layout-builder-cell" data-uid={props.uid} onDragOver={dragOverCallback} onDragLeave={dragLeaveCallback} onDragEnd={dragEndCallback} onDrop={dropCallback} onKeyDown={keyDownCallback} onKeyUp={keyUpCallback}>
         {props.customCss && <style dangerouslySetInnerHTML={{__html:`.craft-layout-builder-cell[data-uid="${props.uid}"] {${props.customCss}}`}}/>}
         <p className="craft-layout-builder-cell-title">{props.title}</p>
         <ul ref={blockList} className={`craft-layout-builder-spacing craft-layout-builder-blocks ${isEmpty && 'empty'}`}>
-            {blocks.map(block => <FieldBlock key={block.uid} fieldHandle={props.fieldHandle} layoutIndex={props.layoutIndex} cellUid={props.uid} {...block}/>)}
+            {blocks.map((block, index) => <FieldBlock key={index}
+                                                      fieldHandle={props.fieldHandle}
+                                                      layoutIndex={props.layoutIndex}
+                                                      cellUid={props.uid}
+                                                      cellIndex={props.cellIndex}
+                                                      blockIndex={index}
+                                                      {...block}/>)}
             {blocks.length === 0 && <li className="craft-layout-builder-block-placeholder">Empty</li>}
         </ul>
-        <p><button onClick={e => {e.preventDefault(); picker.toggle('blocks')}}>Add</button></p>
+        <p><button ref={addButton} className={`clb-appearance-none clb-rounded clb-border clb-border-solid clb-p-1 ${picker.active ? 'clb-border-blue' : ''}`} onClick={e => {e.preventDefault(); picker.toggle('blocks')}}>Add</button></p>
     </div>
 }
 

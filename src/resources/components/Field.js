@@ -17,7 +17,7 @@ const Field = props => {
     // TODO, this should probably be inside a useEffect because it hangs around in memory after the Field re-renders
     picker.on('update', element => {
         const newLayouts = layouts.slice()
-        newLayouts.push(element)
+        newLayouts.push(element.type)
         setLayouts(newLayouts)
     })
 

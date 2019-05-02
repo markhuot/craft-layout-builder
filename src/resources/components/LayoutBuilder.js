@@ -1,6 +1,10 @@
-import React, { useState } from 'react'
+import React, {
+    useState,
+    useEffect,
+    useRef,
+    createRef,
+} from 'react'
 import PropTypes from 'prop-types'
-import Row from './LayoutBuilderRow'
 import uuid from 'uuid'
 import Cell from "./LayoutBuilderCell";
 
@@ -12,11 +16,45 @@ const newCell = () => {
 }
 
 const LayoutBuilder = props => {
-    const [cells, setCells] = useState(props.cells || [newCell()])
+    const [cells, setCells] = useState(props.cells && props.cells.length ? props.cells : [newCell()])
+    const previousCellsRef = useRef([])
     const [useCustomCss, setUseCustomCss] = useState(!!props.useCustomCss || false)
     const [customCss, setCustomCss] = useState(props.customCss || '')
     const computedCss = `grid-template-columns: ${cells.map(cell => cell.width).join(' ')};`
     const layoutCss = (useCustomCss) ? customCss : computedCss
+    const refs = cells.map(cell => createRef(null))
+    const [initialRender, setInitialRender] = useState(true)
+
+    useEffect(() => {
+        if (initialRender) {
+            previousCellsRef.current = cells
+            setInitialRender(false)
+            return
+        }
+
+        const previousCells = previousCellsRef.current.map(cell => cell.uid)
+        const nextCells = cells.map(cell => cell.uid)
+        const addedCells = nextCells.filter(cell => !previousCells.includes(cell))
+        const removedCells = previousCells.filter(cell => !nextCells.includes(cell))
+        if (addedCells.length) {
+            const addedIndex = nextCells.indexOf(addedCells[0])
+            refs[addedIndex].current.focus()
+        }
+        else if (removedCells.length) {
+            let removedIndex = previousCells.indexOf(removedCells[0])
+            if (removedIndex >= nextCells.length) {
+                removedIndex = nextCells.length - 1
+            }
+            if (refs[removedIndex]) {
+                refs[removedIndex].current.focus()
+            }
+        }
+        previousCellsRef.current = cells
+    }, [cells])
+
+    // @TODO replace the above with the below
+    // @TODO need to figure out a way for the below to incorporate the initialRender logic
+    // useBlah(cells.map(cell => cell.uid), index => refs[index] && refs[index].current.focus())
 
     const addCell = event => {
         event.preventDefault()
@@ -46,7 +84,7 @@ const LayoutBuilder = props => {
         </div>
         <hr/>
         <div className="cells">
-            {cells.map((cell, index) => <Cell key={cell.uid} index={index} useCustomCss={useCustomCss} removeCell={removeCell} {...cell}/>)}
+            {cells.map((cell, index) => <Cell ref={refs[index]} key={cell.uid} index={index} useCustomCss={useCustomCss} removeCell={removeCell} {...cell}/>)}
         </div>
         <p><button className="btn layout-builder-button" href="#" onClick={addCell}>Add cell</button></p>
     </div>

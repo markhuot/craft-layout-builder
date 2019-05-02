@@ -1,10 +1,17 @@
-import React, { useState } from 'react'
+import React, {
+    useState,
+    useEffect,
+    useRef,
+    useImperativeHandle,
+    forwardRef
+} from 'react'
 import PropTypes from 'prop-types'
 
-const LayoutBuilderCell = props => {
+const LayoutBuilderCell = (props, ref) => {
     const [cellTitle, setCellTitle] = useState(props.title || '')
     const [cellWidth, setCellWidthState] = useState(props.width || '1fr')
     const [customCss, setCustomCss] = useState(props.customCss || '')
+    const titleField = useRef( )
 
     const removeCell = event => {
         event.preventDefault()
@@ -16,6 +23,10 @@ const LayoutBuilderCell = props => {
         props.setCellWidth(props.uid, event.target.value)
     }
 
+    useImperativeHandle(ref, () => ({
+        focus: () => titleField.current.focus()
+    }))
+
     return <div className="cell" data-id={props.uid}>
         <input type="hidden" name={`layout[cells][${props.index}][uid]`} value={props.uid} />
 
@@ -24,7 +35,7 @@ const LayoutBuilderCell = props => {
                 <label>Title</label>
             </div>
             <div className="input ltr">
-                <input type="text" className="text fullwidth" name={`layout[cells][${props.index}][title]`} value={cellTitle} onChange={e => setCellTitle(e.target.value)} placeholder="Title"/>
+                <input ref={titleField} type="text" className="text fullwidth" name={`layout[cells][${props.index}][title]`} value={cellTitle} onChange={e => setCellTitle(e.target.value)} placeholder="Title"/>
             </div>
         </div>
 
@@ -42,15 +53,15 @@ const LayoutBuilderCell = props => {
             {props.useCustomCss && <style dangerouslySetInnerHTML={{__html:`.cell[data-id="${props.uid}"] {${customCss}}`}}/>}
         </div>
 
-        <p><a href="#" className="error" onClick={removeCell}>Remove cell</a></p>
+        <p><button className="error clb-appearance-none" onClick={removeCell}>Remove cell</button></p>
     </div>
 }
 
-LayoutBuilderCell.propTypes = {
-    title: PropTypes.string,
-    index: PropTypes.number.isRequired,
-    removeCell: PropTypes.func.isRequired,
-    uid: PropTypes.any.isRequired
-}
+// LayoutBuilderCell.propTypes = {
+//     title: PropTypes.string,
+//     index: PropTypes.number.isRequired,
+//     removeCell: PropTypes.func.isRequired,
+//     uid: PropTypes.any.isRequired
+// }
 
-export default LayoutBuilderCell
+export default forwardRef(LayoutBuilderCell)

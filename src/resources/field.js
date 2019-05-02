@@ -10,7 +10,7 @@ import DropPlaceholderContext from './contexts/DropPlaceholderContext'
 
 let dropPlaceholderRef
 const dropPlaceholder = React.createElement(forwardRef(DropPlaceholder), {ref: (placeholder) => {
-        dropPlaceholderRef = placeholder
+    dropPlaceholderRef = placeholder
 }})
 
 const bus = new EventEmitter2
@@ -29,16 +29,18 @@ if (!modalContainer) {
 }
 
 ReactDOM.render(React.createElement(BusContext.Provider, {value: bus},
-    React.createElement(FieldPicker)
-), document.querySelector('.craft-layout-builder-modals-picker'))
-
-ReactDOM.render(React.createElement(BusContext.Provider, {value: bus},
     React.createElement(BlockEditor)
 ), document.querySelector('.craft-layout-builder-modals-block-editor'))
 
 ReactDOM.render(React.createElement(BusContext.Provider, {value: bus},
     dropPlaceholder
 ), document.querySelector('.craft-layout-builder-modals-drop-placeholder'))
+
+ReactDOM.render(React.createElement(BusContext.Provider, {value: bus},
+    React.createElement(DropPlaceholderContext.Provider, {value: dropPlaceholderRef},
+        React.createElement(FieldPicker)
+    )
+), document.querySelector('.craft-layout-builder-modals-picker'))
 
 document.querySelectorAll('[data-layout-builder-field]').forEach(el => {
     ReactDOM.render(React.createElement(BusContext.Provider, {value: bus},

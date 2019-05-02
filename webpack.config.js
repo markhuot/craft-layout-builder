@@ -12,6 +12,7 @@ module.exports = {
     //     path: path.resolve(__dirname),
     //     filename: 'foo.min.js'
     // },
+    devtool: 'source-map',
     output: {
         path: path.resolve(__dirname, 'src/resources'),
         filename: '[name].min.js'

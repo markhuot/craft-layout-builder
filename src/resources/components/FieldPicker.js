@@ -9,7 +9,7 @@ import SearchBox from "./SearchBox"
 const Section = props => {
     return <div>
         <h2 className="clb-text-600 clb-text-sm clb-text-gray">{props.label}</h2>
-        <ul className="clb-grid clb-grid-gap clb-justify-items-stretch" style={{'--grid-template-columns': 'repeat(2, 1fr)'}}>
+        <ul className={`clb-w-full ${props.wide ? 'clb-spacing' : 'clb-grid clb-grid-gap'} clb-justify-items-stretch`} style={{'--grid-template-columns': 'repeat('+(props.wide ? '1' : '2')+', 1fr)'}}>
             {props.elements.map(element => <li key={element.id}><FieldPickerButton type={props.type} {...element}/></li>)}
         </ul>
     </div>
@@ -17,9 +17,31 @@ const Section = props => {
 
 const FieldPicker = props => {
     const [isHidden, setIsHidden] = useState(true)
-    const [elements, setElements] = useState({layouts: [], blockTypes: []})
+    const [elements, setElements] = useState({layouts: [], blockTypes: [], blocks: []})
     const [type, setType] = useState(false)
     const bus = useContext(BusContext)
+
+    useEffect(() => {
+        const listener = event => {
+            if (isHidden) {
+                return
+            }
+
+            let el = event.target
+            while (el) {
+                if (el.classList && el.classList.contains('craft-layout-builder-field-picker')) {
+                    return
+                }
+                el = el.parentNode
+            }
+
+            bus.emit('willSetActivePickerTarget')
+            bus.emit('hidePicker')
+        }
+
+        document.addEventListener('mousedown', listener)
+        return () => document.removeEventListener('mousedown', listener)
+    })
 
     useEffect(() => {
         const showPickerCallback = type => {
@@ -46,14 +68,19 @@ const FieldPicker = props => {
             .then(result => setElements(result.data))
     }, [])
 
+    const onChange = value => {
+        // query for `value`
+    }
+
     if (isHidden) {
         return null
     }
 
-    return <div className="craft-layout-builder-field-picker clb-spacing-xl">
-        <SearchBox/>
-        <Section type="layouts" label="Layouts" elements={elements.layouts}/>
-        <Section type="blocks" label="Block Types" elements={elements.blockTypes}/>
+    return <div className="craft-layout-builder-field-picker clb-spacing-xl clb-overflow-auto">
+        <SearchBox onChange={onChange}/>
+        {type === 'layouts' && <Section type="layouts" label="Layouts" elements={elements.layouts}/>}
+        {type === 'blocks' && <Section type="blockTypes" label="Block Types" elements={elements.blockTypes}/>}
+        {type === 'blocks' && <Section type="blocks" wide={true} label="Recent Blocks" elements={elements.blocks}/>}
     </div>
 }
 

@@ -33,13 +33,22 @@ const BlockEditor = props => {
         return () => el.style.transform = ''
     }, [block])
 
+    useEffect(() => {
+        const cancelBlockEditorCallback = block => {
+            setBlock(false)
+        }
+
+        bus.on('cancelBlockEditor', cancelBlockEditorCallback)
+        return () => bus.off('cancelBlockEditor', cancelBlockEditorCallback)
+    })
+
     if (block === false) {
         return null
     }
 
     const cancelBlockEditor = event => {
         event.preventDefault()
-        setBlock(false)
+        bus.emit('focusBlock', block)
         bus.emit('cancelBlockEditor', block)
     }
 

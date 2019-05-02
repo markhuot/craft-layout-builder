@@ -60,6 +60,7 @@ class Block extends Element {
      */
     function toArray(array $fields = [], array $expand = [], $recursive = true) {
         $array = parent::toArray($fields, $expand, $recursive);
+        $array['__typename'] = 'Block';
         $array['type'] = $this->type->toArray();
         return $array;
     }

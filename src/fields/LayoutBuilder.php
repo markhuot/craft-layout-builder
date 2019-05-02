@@ -31,57 +31,19 @@ class LayoutBuilder extends Field {
     }
 
     /**
-     * @inheritdoc
-     *
-     * $value is a JSON object representing the layout. It looks something like this,
-     *
-     * $value => [
-     *   'layouts' => [
-     *     'uid-v4-of-layout1',
-     *     'uid-v4-of-layout2',
-     *     'uid-v4-of-layout3',
-     *   ]
-     *   blocks => [
-     *
-     *   ]
-     * ]
+     * @inheritDoc
      */
     function getInputHtml($value, ElementInterface $element = null): string
     {
+        /** @var LayoutBuilderFieldData $value */
+
         Craft::$app->view->registerAssetBundle(FieldInputAssetBundle::class);
-
-        if (is_string($value)) {
-            $value = json_decode($value, true);
-        }
-
-        if (!is_array($value)) {
-            $value = [];
-        }
-
-        foreach ($value as &$layout) {
-            $allBlocks = @$layout['blocks'] ?: [];
-            $layout = Layout::findOne(['uid' => $layout['uid']])->toArray();
-            foreach ($layout['cells'] as &$cell) {
-                $blockUids = @$allBlocks[$cell['uid']];
-                if ($blockUids) {
-                    $cellBlockModels = Block::find()
-                        ->where(['{{%elements}}.uid' => $blockUids])
-                        ->orderBy([new Expression('FIELD({{%elements}}.uid, "'.implode('","', $blockUids).'")')])
-                        ->all();
-
-                    $cell['blocks'] = array_map(function ($block) {
-                        return $block->toArray();
-                    }, $cellBlockModels);
-                }
-            }
-        }
-        $value = json_encode($value);
 
         return Craft::$app->getView()->renderTemplate('layoutbuilder/field/input', [
             'id' => $this->handle.'-'.$element->getId(),
             'name' => $this->handle,
             'element' => $element,
-            'value' => $value,
+            'value' => $value->toArray(),
             'field' => $this,
         ]);
     }
@@ -90,7 +52,20 @@ class LayoutBuilder extends Field {
      * @inheritDoc
      */
     function serializeValue($value, ElementInterface $element = null) {
-        return parent::serializeValue($value, $element);
+        return parent::serializeValue($value->getRawData(), $element);
+    }
+
+    /**
+     * @inheritDoc
+     */
+    function normalizeValue($value, ElementInterface $element = null) {
+        // if it's from the DB it'll be a string, if it's a POST from
+        // a form submission it'll be an array. That's silly.
+        if (is_string($value)) {
+            $value = json_decode($value, true) ?: [];
+        }
+
+        return new LayoutBuilderFieldData($value ?: []);
     }
 
 }

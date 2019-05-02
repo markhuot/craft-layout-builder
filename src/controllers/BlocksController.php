@@ -16,6 +16,7 @@ class BlocksController extends Controller {
         $block = new Block;
         $block->fieldLayoutId = $blockType->fieldLayoutId;
         $block->blockTypeId = $blockType->id;
+        $block->uid = Craft::$app->request->getParam('uid');
         $tabs = [];
 
         foreach ($block->getFieldLayout()->getTabs() as $index => $tab) {
@@ -28,7 +29,6 @@ class BlocksController extends Controller {
 
         return $this->renderTemplate('layoutbuilder/blocks/edit', [
             'withFrame' => !!Craft::$app->request->getParam('withFrame', true),
-            'uid' => Craft::$app->request->getParam('uid'),
             'block' => $block,
             'tabs' => $tabs,
         ]);
@@ -37,6 +37,7 @@ class BlocksController extends Controller {
     function actionStore($blockTypeHandle) {
         $blockType = BlockType::findOne(['handle' => $blockTypeHandle]);
         $withFrame = !!Craft::$app->request->getParam('layout.withFrame');
+        $redirect = Craft::$app->request->getParam('redirect');
 
         $block = new Block;
         // $block->uid = Craft::$app->request->getParam('uid'); // doesn't actually save...
@@ -52,17 +53,18 @@ class BlocksController extends Controller {
             $blockRecord = Element::findOne($block->id);
             $blockRecord->uid = $uid;
             $blockRecord->save();
+
+            // overwrite the uid for the JSON response below
+            $block->uid = $uid;
         }
 
-        // if (Craft::$app->request->getParam('redirect')) {
-        //
-        // }
+        if ($redirect || $withFrame) {
+            return $this->redirect($block->getCpEditUrl() . ($withFrame ? '' : '?withFrame=0'));
+        }
 
-        return $this->redirect($block->getCpEditUrl() . ($withFrame ? '' : '?withFrame=0'));
-
-        // return $this->renderTemplate('layoutbuilder/blocks/iframe/done', [
-        //     'block' => $block,
-        // ]);
+        return $this->renderTemplate('layoutbuilder/blocks/iframe/done', [
+            'block' => $block,
+        ]);
     }
 
     function actionShow($blockId) {

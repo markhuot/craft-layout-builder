@@ -40,14 +40,14 @@
             <label>Icon</label>
         </div>
         <div class="input ltr">
-            <div data-icon-picker data-name="layout[icon]" data-value="{{ layout.icon }}"></div>
+            <div data-icon-picker data-name="layout[icon]" data-value="{{ layout.icon|default('') }}"></div>
         </div>
     </div>
 
     <hr>
 
     <div class="layoutbuilder">
-        <div data-layout-builder data-use-custom-css="{{ layout.useCustomCss }}" data-custom-css="{{ layout.customCss }}" data-cells="{{ layout.cells|default('[]') }}"></div>
+        <div data-layout-builder data-use-custom-css="{{ layout.useCustomCss|default('') }}" data-custom-css="{{ layout.customCss|default('') }}" data-cells="{{ layout.cells|default('[]') }}"></div>
     </div>
 
 {% endblock %}

@@ -11,7 +11,7 @@ const FieldLayout = props => {
         <p className="craft-layout-builder-layout-title">{props.title}</p>
         <input type="hidden" name={`fields[${props.fieldHandle}][${props.index}][uid]`} value={props.uid}/>
         <div className="craft-layout-builder-grid" data-index={props.index}>
-            {props.cells.map((cell, index) => <FieldCell key={index} fieldHandle={props.fieldHandle} layoutIndex={props.index} {...cell}/>)}
+            {props.cells.map((cell, index) => <FieldCell key={index} fieldHandle={props.fieldHandle} layoutIndex={props.index} cellIndex={index} {...cell}/>)}
         </div>
     </div>
 }

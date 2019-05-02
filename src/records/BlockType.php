@@ -19,4 +19,10 @@ class BlockType extends ActiveRecord {
         return parent::beforeSave($insert);
     }
 
+    function toArray(array $fields = [], array $expand = [], $recursive = true) {
+        $array = parent::toArray($fields, $expand, $recursive);
+        $array['__typename'] = 'BlockTypeRecord';
+        return $array;
+    }
+
 }

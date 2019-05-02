@@ -13,4 +13,10 @@ class Block extends ActiveRecord {
         return '{{%layoutbuilder_blocks}}';
     }
 
+    function toArray(array $fields = [], array $expand = [], $recursive = true) {
+        $array = parent::toArray($fields, $expand, $recursive);
+        $array['__typename'] = 'BlockRecord';
+        return $array;
+    }
+
 }

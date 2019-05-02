@@ -68,7 +68,7 @@ const IconModal = props => {
     }
 
     return createPortal(<div className="icon-modal" {...attr}>
-        <div class="clb-p-5">
+        <div className="clb-p-5">
             <SearchBox onChange={onChange} onKeyUp={onKeyUp} onFocus={onFocus} onBlur={onBlur}/>
         </div>
         <div className="clb-px-5 icon-modal__icons">
