@@ -31,6 +31,7 @@ const FieldCell = props => {
         const newBlocks = blocks.slice()
         newBlocks.splice(placement, 0, newBlock)
         setBlocks(newBlocks)
+        blockList.current.childNodes[placement].focus()
 
         if (newBlock.id === null) {
             bus.emit('showBlockEditor', newBlock)
@@ -133,7 +134,7 @@ const FieldCell = props => {
         {props.customCss && <style dangerouslySetInnerHTML={{__html:`.craft-layout-builder-cell[data-uid="${props.uid}"] {${props.customCss}}`}}/>}
         <p className="craft-layout-builder-cell-title">{props.title}</p>
         <ul ref={blockList} {...droppableEvents} className={`craft-layout-builder-spacing craft-layout-builder-blocks ${isEmpty && 'empty'}`}>
-            {blocks.map((block, index) => <FieldBlock key={index}
+            {blocks.map((block, index) => <FieldBlock key={`${props.uid}${index}`}
                                                       fieldHandle={props.fieldHandle}
                                                       layoutIndex={props.layoutIndex}
                                                       cellUid={props.uid}

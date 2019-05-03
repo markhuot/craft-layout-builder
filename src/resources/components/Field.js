@@ -74,7 +74,7 @@ const Field = props => {
     return <div className={`craft-layout-builder-grid`}>
         {layouts.length === 0 && <div className="craft-layout-builder-cell empty"><a href="#" onClick={toggleElementPicker}>Pick a layout</a> to get started.</div>}
         <div ref={layoutList} className="clb-spacing-xl" {...droppableEvents}>
-            {layouts.map((layout, index) => <FieldLayout key={index} index={index} fieldHandle={props.handle} data={layout}/>)}
+            {layouts.map((layout, index) => <FieldLayout key={layout.uid} index={index} fieldHandle={props.handle} data={layout}/>)}
         </div>
         {layouts.length > 0 && <div className={`btngroup`}>
             <button className={`btn add icon ${picker.active ? 'clb-border clb-border-blue' : ''}`} onClick={toggleElementPicker}>Add a Layout</button>
