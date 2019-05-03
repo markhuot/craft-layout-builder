@@ -57,7 +57,7 @@
             // is triggered. Therefore make sure you do any parent page events
             // _before_ you call cancelBlockEditor and remove the frame
             parent.layoutBuilderBus.emit('focusBlock', {{ block|json_encode|raw }})
-            parent.layoutBuilderBus.emit('cancelBlockEditor', {{ block|json_encode|raw }})
+            parent.layoutBuilderBus.emit('hideBlockEditor', {{ block|json_encode|raw }})
         }
     })
 {% endjs %}

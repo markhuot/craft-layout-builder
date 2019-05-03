@@ -19,12 +19,18 @@
         grid-gap: 24px;
     }
     .craft-layout-builder-layout {
-        /*border: 1px solid rgba(0, 0, 20, 0.1);*/
-        /*border-radius: 2px;*/
+        border: 1px solid transparent;
+        border-radius: 2px;
         position: relative;
-        /*padding: 10px;*/
+        padding: 0 10px 10px;
+        margin-left: -10px;
+        margin-right: -10px;
         /*background-image: url(http://dev.craftql.com/cpresources/ef13988d/images/fieldlayoutform-bg_2x.png);*/
         /*background-size: 30px 30px;*/
+    }
+    .craft-layout-builder-layout:focus {
+        outline: none;
+        border-color: #0D99F2;
     }
     .craft-layout-builder-layout-title {
         font-size: 11px;
@@ -135,27 +141,37 @@
     }
     .craft-layout-builder-drop-target,
     #craft-layout-builder-drop-target {
+        box-sizing: content-box;
         position: fixed;
         top: -100px;
         left: 0;
         height: 4px;
         width: 200px;
-        /*background: black;*/
         border-radius: 2px;
         z-index: 100;
         transform: translateY(-50%);
         display: none;
-        animation: pulse 0.75s infinite;
-        /*transition: width 0.5s;*/
+        animation: pulse 1.25s infinite;
+        --scaleX: 1.05;
+        pointer-events: none;
     }
     @keyframes pulse {
         0% {
+            /*margin-left: 0px;*/
+            /*padding-left: 0;*/
+            /*padding-right: 0;*/
             transform: translateY(-50%) scaleX(1);
         }
         50% {
-            transform: translateY(-50%) scaleX(1.05);
+            /*margin-left: -10px;*/
+            /*padding-left: 10px;*/
+            /*padding-right: 10px;*/
+            transform: translateY(-50%) scaleX(var(--scaleX));
         }
         100% {
+            /*margin-left: 0;*/
+            /*padding-left: 0;*/
+            /*padding-right: 0;*/
             transform: translateY(-50%) scaleX(1);
         }
     }

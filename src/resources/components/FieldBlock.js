@@ -8,13 +8,12 @@ import React, {
 } from 'react'
 import BusContext from '../contexts/BusContext'
 import icons from './Icons'
-import DropPlaceholderContext from '../contexts/DropPlaceholderContext'
+import {useDraggable} from '../hooks/UseDraggable'
 
-const FieldBlock = (props, ref) => {
+const FieldBlock = props => {
     const bus = useContext(BusContext)
     const anchor = useRef(null)
     const [isSelected, setIsSelected] = useState(false)
-    const placeholder = useContext(DropPlaceholderContext)
 
     const openBlockEditor = (event, block) => {
         event.preventDefault()
@@ -38,34 +37,6 @@ const FieldBlock = (props, ref) => {
             anchor.current.focus()
         }
     })
-
-    useImperativeHandle(ref, () => ({
-        focus: () => anchor.current.focus()
-    }))
-
-    const dragStartCallback = event => {
-        const clonedBlock = Object.assign({}, props)
-
-        // @TODO, I hate removing these. They shouldn't even be here, really, we need a better separation of block/model props and UI props
-        delete clonedBlock.layoutIndex
-        delete clonedBlock.cellIndex
-        delete clonedBlock.cellUid
-        delete clonedBlock.blockIndex
-
-        event.dataTransfer.setData(`x-block-uid/${clonedBlock.uid}`, clonedBlock.uid)
-        event.dataTransfer.setData(`x-block/key`, `${props.layoutIndex}.${props.cellIndex}.${props.blockIndex}`)
-        event.dataTransfer.setData(`x-block-key/${props.layoutIndex}.${props.cellIndex}.${props.blockIndex}`, `${props.layoutIndex}.${props.cellIndex}.${props.blockIndex}`)
-        event.dataTransfer.setData(`x-block/action`, 'move')
-        event.dataTransfer.setData(`x-block/action.move`, 'move')
-        event.dataTransfer.setData(`x-block/json`, JSON.stringify(clonedBlock))
-
-        bus.emit('dragStart', event)
-    }
-
-    const dragEndCallback = event => {
-        placeholder.hide()
-        bus.emit('dragEnd', event)
-    }
 
     const onKeyDownCallback = event => {
         const keyCode = event.keyCode
@@ -96,15 +67,21 @@ const FieldBlock = (props, ref) => {
         // setIsSelected(!isSelected)
     }
 
-    return <li ref={anchor} tabIndex="0" className={`craft-layout-builder-block ${isSelected ? 'selected' : ''}`} draggable="true" onDragStart={dragStartCallback} onDragEnd={dragEndCallback} onKeyDown={onKeyDownCallback} onKeyUp={onKeyUpCallback} onClick={onClickCallback}>
-        <input type="hidden" name={`fields[${props.fieldHandle}][${props.layoutIndex}][blocks][${props.cellUid}][]`} value={props.uid}/>
+    const {events: draggableEvents} = useDraggable({
+        type: 'block',
+        key: `${props.fieldHandle}[${props.layoutIndex}][${props.cellIndex}]`,
+        data: props.data,
+    })
+
+    return <li ref={anchor} tabIndex="0" className={`craft-layout-builder-block ${isSelected ? 'selected' : ''}`} draggable="true" {...draggableEvents} onKeyDown={onKeyDownCallback} onKeyUp={onKeyUpCallback} onClick={onClickCallback}>
+        <input type="hidden" name={`fields[${props.fieldHandle}][${props.layoutIndex}][blocks][${props.cellUid}][]`} value={props.data.uid}/>
         <div className="clb-flex">
-            {props.type.icon && <span className="craft-layout-builder-cell-icon clb-shrink-0">{icons.withKey(props.type.icon)}</span>}
-            <a tabIndex="-1" className="craft-layout-builder-block-title clb-truncate" href={`/admin/blocks/${props.id}`} onClick={e => openBlockEditor(e, props)} draggable="false">
-                {props.title || 'Untitled'}
+            {props.data.type.icon && <span className="craft-layout-builder-cell-icon clb-shrink-0">{icons.withKey(props.data.type.icon)}</span>}
+            <a tabIndex="-1" className="craft-layout-builder-block-title clb-truncate" href={`/admin/blocks/${props.data.id}`} onClick={e => openBlockEditor(e, props.data)} draggable="false">
+                {props.data.title || 'Untitled'}
             </a>
         </div>
     </li>
 }
 
-export default forwardRef(FieldBlock)
+export default FieldBlock

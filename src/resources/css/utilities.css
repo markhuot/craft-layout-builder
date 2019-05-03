@@ -2,7 +2,7 @@ button[class*="clb"]:active { color: inherit; }
 
 .clb-appearance-none { appearance: none; -webkit-appearance: none; font-size: inherit; padding: 0; display: inline; border: none; background: none; }
 
-*[class*="clb-border"] { border-color: rgba(0, 0, 20, 0.1); }
+*[class*="clb-border"] { border-style: solid; border-color: rgba(0, 0, 20, 0.1); }
 .clb-border-0 { border-width: 0; }
 .clb-border { border-width: 1px; }
 .clb-border-2 { border-width: 2px; }

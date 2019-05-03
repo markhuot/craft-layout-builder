@@ -33,23 +33,16 @@ const BlockEditor = props => {
         return () => el.style.transform = ''
     }, [block])
 
-    useEffect(() => {
-        const cancelBlockEditorCallback = block => {
-            setBlock(false)
-        }
-
-        bus.on('cancelBlockEditor', cancelBlockEditorCallback)
-        return () => bus.off('cancelBlockEditor', cancelBlockEditorCallback)
-    })
-
     if (block === false) {
         return null
     }
 
-    const cancelBlockEditor = event => {
+    const hideBlockEditor = event => {
         event.preventDefault()
+        // @TODO, need a better way to do this, the block could be on the page several times and
+        // focusing on the UID would select the first one, not the one we're actually editing
         bus.emit('focusBlock', block)
-        bus.emit('cancelBlockEditor', block)
+        bus.emit('hideBlockEditor', block)
     }
 
     let url
@@ -61,7 +54,7 @@ const BlockEditor = props => {
     }
 
     return <div className="craft-layout-builder-block-editor">
-        <div className="craft-layout-builder-block-editor-shade" onClick={cancelBlockEditor}/>
+        <div className="craft-layout-builder-block-editor-shade" onClick={hideBlockEditor}/>
         <iframe className="craft-layout-builder-block-editor-screen" src={url}/>
     </div>
 }
