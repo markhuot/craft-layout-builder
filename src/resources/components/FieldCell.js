@@ -13,6 +13,8 @@ import useElementPicker from '../hooks/UseElementPicker'
 import FieldBlock from "./FieldBlock";
 import DropPlaceholderContext from '../contexts/DropPlaceholderContext'
 import {useDroppable} from '../hooks/UseDraggable'
+import FieldBlockPicker from "./FieldBlockPicker";
+import BlockEditorNew from "./BlockEditorNew";
 
 const FieldCell = props => {
     const bus = useContext(BusContext)
@@ -22,6 +24,8 @@ const FieldCell = props => {
     const addButton = useRef(null)
     const picker = useElementPicker()
     const cellKey = `${props.fieldHandle}[${props.layoutIndex}][${props.cellIndex}]`
+    const [showBlockPicker, setShowBlockPicker] = useState(false)
+    const [showBlockEditor, setShowBlockEditor] = useState(false)
 
     const addBlockAtIndex = (newBlock, placement) => {
         if (!placement) {
@@ -36,10 +40,6 @@ const FieldCell = props => {
         // until React can re-render the component. setBlocks isn't synchronous
         // so we need to find a way to call this after the re-render
         // blockList.current.childNodes[placement].focus()
-
-        if (newBlock.id === null) {
-            bus.emit('showBlockEditor', newBlock)
-        }
     }
 
     const removeBlockAtIndex = index => {
@@ -145,10 +145,42 @@ const FieldCell = props => {
                                                       cellUid={props.data.uid}
                                                       cellIndex={props.cellIndex}
                                                       blockIndex={index}
+                                                      onClick={event => setShowBlockEditor(index)}
                                                       data={block}/>)}
             {blocks.length === 0 && <li className="craft-layout-builder-block-placeholder">Empty</li>}
         </ul>
-        <p><button ref={addButton} className={`clb-appearance-none clb-rounded clb-border clb-border-solid clb-p-1 ${picker.active ? 'clb-border-blue' : ''}`} onClick={e => {e.preventDefault(); picker.toggle('blocks')}}>Add</button></p>
+        <p>
+            <button ref={addButton}
+                    className={`clb-appearance-none clb-rounded clb-border clb-border-solid clb-p-1 ${showBlockPicker ? 'clb-border-blue' : ''}`}
+                    onClick={e => {
+                        e.preventDefault()
+                        setShowBlockPicker(!showBlockPicker)
+                    }}
+            >Add</button>
+        </p>
+        {showBlockPicker && <FieldBlockPicker
+            onPick={block => {
+                const newIndex = blocks.length
+                addBlockAtIndex(block, newIndex)
+                setShowBlockPicker(false)
+                setShowBlockEditor(newIndex)
+            }}
+        />}
+        {showBlockEditor !== false && <BlockEditorNew
+            block={blocks[showBlockEditor]}
+            onClose={() => {
+                if (blocks[showBlockEditor].id === null) {
+                    removeBlockAtIndex(showBlockEditor)
+                }
+                setShowBlockEditor(false)
+            }}
+            onSave={block => {
+                const newBlocks = blocks.slice()
+                newBlocks[showBlockEditor] = block
+                setBlocks(newBlocks)
+                setShowBlockEditor(false)
+            }}
+        />}
     </div>
 }
 
