@@ -1,6 +1,6 @@
 <script>
     const block = {{ block.toArray()|json_encode|raw }}
     parent.layoutBuilderBus.emit('updateBlock', block)
-    parent.layoutBuilderBus.emit('focusBlock', block)
+    // parent.layoutBuilderBus.emit('focusBlock', block)
     parent.layoutBuilderBus.emit('hideBlockEditor', block)
 </script>

@@ -4,11 +4,12 @@ namespace markhuot\layoutbuilder\variables;
 
 use markhuot\layoutbuilder\records\BlockType;
 use markhuot\layoutbuilder\records\Layout;
+use markhuot\layoutbuilder\records\LayoutType;
 
 class LayoutBuilderVariable {
 
-    function getLayouts() {
-        $query = Layout::find();
+    function getLayoutTypes() {
+        $query = LayoutType::find();
         $query->orderBy('title asc');
         return $query;
     }

@@ -16,9 +16,8 @@ const IconModal = props => {
         }
     }
 
-    const onChange = event => {
-        const q = event.target.value
-        setFilteredIcons(icons.matching(q))
+    const onChange = value => {
+        setFilteredIcons(icons.matching(value))
         setFocusedIndex(0)
     }
 

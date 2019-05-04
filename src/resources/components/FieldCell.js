@@ -23,7 +23,7 @@ const FieldCell = props => {
     const picker = useElementPicker()
     const cellKey = `${props.fieldHandle}[${props.layoutIndex}][${props.cellIndex}]`
 
-    const addBlock = (newBlock, placement) => {
+    const addBlockAtIndex = (newBlock, placement) => {
         if (!placement) {
             placement = blocks.length
         }
@@ -31,14 +31,18 @@ const FieldCell = props => {
         const newBlocks = blocks.slice()
         newBlocks.splice(placement, 0, newBlock)
         setBlocks(newBlocks)
-        blockList.current.childNodes[placement].focus()
+
+        // can't call focus here because childNodes[placement] won't exist
+        // until React can re-render the component. setBlocks isn't synchronous
+        // so we need to find a way to call this after the re-render
+        // blockList.current.childNodes[placement].focus()
 
         if (newBlock.id === null) {
             bus.emit('showBlockEditor', newBlock)
         }
     }
 
-    const removeBlockByIndex = index => {
+    const removeBlockAtIndex = index => {
         let newBlocks = blocks.slice()
         newBlocks.splice(index, 1)
         setBlocks(newBlocks)
@@ -51,7 +55,7 @@ const FieldCell = props => {
         }
     }
 
-    const moveBlockByIndex = (oldIndex, newIndex) => {
+    const moveBlockToIndex = (oldIndex, newIndex) => {
         const newBlocks = blocks.slice()
         if (newIndex < 0) { newIndex = 0 }
         if (newIndex > blocks.length - 1) { newIndex = blocks.length - 1 }
@@ -62,7 +66,7 @@ const FieldCell = props => {
 
     useEffect(() => {
         const removeBlockFromKeyCallback = index => {
-            removeBlockByIndex(index)
+            removeBlockAtIndex(index)
         }
 
         bus.on(`removeBlockFromKey(${cellKey})`, removeBlockFromKeyCallback)
@@ -70,19 +74,10 @@ const FieldCell = props => {
     })
 
     useEffect(() => {
-        const hideBlockEditorCallback = () => {
-            const newBlocks = blocks.filter(block => block.id)
-            setBlocks(newBlocks)
-        }
 
-        bus.on('hideBlockEditor', hideBlockEditorCallback)
-        return () => bus.off('hideBlockEditor', hideBlockEditorCallback)
-    })
-
-    useEffect(() => {
         const updateBlockCallback = updatedBlock => {
             let blockFound = false
-            let newBlocks = blocks.slice()
+            let newBlocks = blocks.map(block => Object.assign({}, block))
             newBlocks = newBlocks.map(block => {
                 if (block.uid === updatedBlock.uid) {
                     blockFound = true
@@ -96,27 +91,37 @@ const FieldCell = props => {
             }
         }
 
+        const hideBlockEditorCallback = () => {
+            // const newBlocks = blocks.filter(block => block.id)
+            // setBlocks(newBlocks)
+            setBlocks(oldBlocks => oldBlocks.filter(block => block.id))
+        }
+
+        bus.on('hideBlockEditor', hideBlockEditorCallback)
         bus.on('updateBlock', updateBlockCallback)
-        return () => bus.off('updateBlock', updateBlockCallback)
+        return () => {
+            bus.off('updateBlock', updateBlockCallback)
+            bus.off('hideBlockEditor', hideBlockEditorCallback)
+        }
     })
 
     picker.on('update', newBlock => {
-        addBlock(newBlock)
+        addBlockAtIndex(newBlock)
         if (newBlock.id === null) {
             bus.emit('showBlockEditor', newBlock)
         }
     })
 
-    const onMove = ({event, oldKey, oldIndex, newKey, newIndex, data}) => {
+    const onMove = ({oldKey, oldIndex, newKey, newIndex, data}) => {
         if (oldKey && oldKey === newKey) {
-            moveBlockByIndex(oldIndex, newIndex)
+            moveBlockToIndex(oldIndex, newIndex)
         }
         else {
             if (oldKey) {
                 bus.emit(`removeBlockFromKey(${oldKey})`, oldIndex)
             }
 
-            addBlock(data, newIndex)
+            addBlockAtIndex(data, newIndex)
 
             if (data.id === null) {
                 bus.emit('showBlockEditor', data)
@@ -125,19 +130,19 @@ const FieldCell = props => {
     }
 
     const onDelete = ({index}) => {
-        removeBlockByIndex(index)
+        removeBlockAtIndex(index)
     }
 
     const {events: droppableEvents} = useDroppable({ref:blockList, key:cellKey, accept:['block'], onMove, onDelete})
 
-    return <div className="craft-layout-builder-cell" data-uid={props.uid}>
-        {props.customCss && <style dangerouslySetInnerHTML={{__html:`.craft-layout-builder-cell[data-uid="${props.uid}"] {${props.customCss}}`}}/>}
-        <p className="craft-layout-builder-cell-title">{props.title}</p>
+    return <div className="craft-layout-builder-cell" data-uid={props.data.uid}>
+        {props.data.customCss && <style dangerouslySetInnerHTML={{__html:`.craft-layout-builder-cell[data-uid="${props.data.uid}"] {${props.data.customCss}}`}}/>}
+        <p className="craft-layout-builder-cell-title">{props.data.title}</p>
         <ul ref={blockList} {...droppableEvents} className={`craft-layout-builder-spacing craft-layout-builder-blocks ${isEmpty && 'empty'}`}>
-            {blocks.map((block, index) => <FieldBlock key={`${props.uid}${index}`}
+            {blocks.map((block, index) => <FieldBlock key={`${props.data.uid}${index}`}
                                                       fieldHandle={props.fieldHandle}
                                                       layoutIndex={props.layoutIndex}
-                                                      cellUid={props.uid}
+                                                      cellUid={props.data.uid}
                                                       cellIndex={props.cellIndex}
                                                       blockIndex={index}
                                                       data={block}/>)}

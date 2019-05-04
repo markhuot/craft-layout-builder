@@ -1,7 +1,7 @@
 {% extends "_layouts/cp" %}
 {% import "_includes/forms" as forms %}
 
-{% set title %}{{ layout.id|default(false) ? 'Edit' : 'Create' }} Layout{% endset %}
+{% set title %}{{ layoutType.id|default(false) ? 'Edit' : 'Create' }} Layout{% endset %}
 {% set fullPageForm = true %}
 {% set crumbs = [
     {url: '/admin/settings', label: 'Settings'},
@@ -10,7 +10,7 @@
 ] %}
 
 {% block content %}
-    <input type="hidden" name="layout[id]" value="{{ layout.id|default('') }}">
+    <input type="hidden" name="layout[id]" value="{{ layoutType.id|default('') }}">
 
     <style>
         .cells {
@@ -30,7 +30,7 @@
     {{ forms.textField({
         label: 'Title',
         name: 'layout[title]',
-        value: layout.title|default(''),
+        value: layoutType.title|default(''),
         first: true,
         autofocus: true
     }) }}
@@ -40,14 +40,14 @@
             <label>Icon</label>
         </div>
         <div class="input ltr">
-            <div data-icon-picker data-name="layout[icon]" data-value="{{ layout.icon|default('') }}"></div>
+            <div data-icon-picker data-name="layout[icon]" data-value="{{ layoutType.icon|default('') }}"></div>
         </div>
     </div>
 
     <hr>
 
     <div class="layoutbuilder">
-        <div data-layout-builder data-use-custom-css="{{ layout.useCustomCss|default('') }}" data-custom-css="{{ layout.customCss|default('') }}" data-cells="{{ layout.cells|default('[]') }}"></div>
+        <div data-layout-builder data-use-custom-css="{{ layoutType.useCustomCss|default('') }}" data-custom-css="{{ layoutType.customCss|default('') }}" data-cells="{{ layoutType.cells|default([])|json_encode }}"></div>
     </div>
 
 {% endblock %}

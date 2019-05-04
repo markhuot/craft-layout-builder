@@ -31,10 +31,10 @@ class LayoutBuilder extends Plugin
         Event::on(UrlManager::class, UrlManager::EVENT_REGISTER_CP_URL_RULES, function (RegisterUrlRulesEvent $event) {
             $event->rules['GET layoutbuilder/api/elements'] = 'layoutbuilder/api/elements';
 
-            $event->rules['GET settings/plugins/layoutbuilder/layouts/create'] = 'layoutbuilder/layouts/create';
-            $event->rules['POST settings/plugins/layoutbuilder/layouts/create'] = 'layoutbuilder/layouts/store';
-            $event->rules['GET settings/plugins/layoutbuilder/layouts/<layoutId:\d+>'] = 'layoutbuilder/layouts/show';
-            $event->rules['POST settings/plugins/layoutbuilder/layouts/<layoutId:\d+>'] = 'layoutbuilder/layouts/update';
+            $event->rules['GET settings/plugins/layoutbuilder/layouttypes/create'] = 'layoutbuilder/layouttypes/create';
+            $event->rules['POST settings/plugins/layoutbuilder/layouttypes/create'] = 'layoutbuilder/layouttypes/store';
+            $event->rules['GET settings/plugins/layoutbuilder/layouttypes/<layoutId:\d+>'] = 'layoutbuilder/layouttypes/show';
+            $event->rules['POST settings/plugins/layoutbuilder/layouttypes/<layoutId:\d+>'] = 'layoutbuilder/layouttypes/update';
 
             $event->rules['GET settings/plugins/layoutbuilder/blocktypes/create'] = 'layoutbuilder/blocktypes/create';
             $event->rules['POST settings/plugins/layoutbuilder/blocktypes/create'] = 'layoutbuilder/blocktypes/store';

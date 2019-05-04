@@ -6,6 +6,7 @@ use craft\web\Controller;
 use markhuot\layoutbuilder\elements\Block;
 use markhuot\layoutbuilder\records\BlockType;
 use markhuot\layoutbuilder\records\Layout;
+use markhuot\layoutbuilder\records\LayoutType;
 use yii\db\ActiveQuery;
 
 class ApiController extends Controller {
@@ -13,7 +14,7 @@ class ApiController extends Controller {
     function actionElements() {
         /** @var ActiveQuery[] $queries */
         $queries = [
-            'layouts' => Layout::find()->orderBy('title asc'),
+            'layouts' => LayoutType::find()->orderBy('title asc'),
             'blockTypes' => BlockType::find()->orderBy('title asc'),
             'blocks' => Block::find()->limit(10),
         ];

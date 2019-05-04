@@ -2,14 +2,14 @@
 <p>Layouts create the skeleton of a page. They can have one or more regions within them that hold your content.</p>
 
 <table class="shadow-box editable">
-    {% for layout in craft.layoutbuilder.layouts.all() %}
+    {% for layout in craft.layoutbuilder.layoutTypes.all() %}
         <tr>
             <th width="100">{icon}</th>
-            <td><a href="/admin/settings/plugins/layoutbuilder/layouts/{{ layout.id }}">{{ layout.title }}</a></td>
+            <td><a href="/admin/settings/plugins/layoutbuilder/layouttypes/{{ layout.id }}">{{ layout.title }}</a></td>
         </tr>
     {% endfor %}
 </table>
-<p><a href="/admin/settings/plugins/layoutbuilder/layouts/create">New</a></p>
+<p><a href="/admin/settings/plugins/layoutbuilder/layouttypes/create">New</a></p>
 
 <hr>
 <h2>Blocks</h2>

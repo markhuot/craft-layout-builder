@@ -19,7 +19,7 @@ class Install extends Migration
      */
     public function safeUp()
     {
-        $this->createTable('{{%layoutbuilder_layouts}}', [
+        $this->createTable('{{%layoutbuilder_layouttypes}}', [
             'id' => $this->primaryKey(),
             'title' => $this->string(),
             'handle' => $this->string(),
@@ -27,6 +27,14 @@ class Install extends Migration
             'cells' => $this->text(),
             'useCustomCss' => $this->boolean(),
             'customCss' => $this->text(),
+            'dateCreated' => $this->dateTime(),
+            'dateUpdated' => $this->dateTime(),
+            'uid' => $this->string(),
+        ]);
+
+        $this->createTable('{{%layoutbuilder_layouts}}', [
+            'id' => $this->primaryKey(),
+            'layoutTypeId' => $this->integer()->unsigned(),
             'dateCreated' => $this->dateTime(),
             'dateUpdated' => $this->dateTime(),
             'uid' => $this->string(),
@@ -51,6 +59,7 @@ class Install extends Migration
             'uid' => $this->string(),
         ]);
 
+        $this->addForeignKey(null, '{{%layoutbuilder_layouts}}', ['id'], Table::ELEMENTS, ['id'], 'CASCADE', null);
         $this->addForeignKey(null, '{{%layoutbuilder_blocks}}', ['id'], Table::ELEMENTS, ['id'], 'CASCADE', null);
 
         // $this->createTable('{{%layoutrows}}', [
@@ -121,6 +130,7 @@ class Install extends Migration
         //     ->delete('{{%fieldlayouts}}', ['type' => Row::class])
         //     ->execute();
 
+        $this->dropTableIfExists('{{%layoutbuilder_layouttypes}}');
         $this->dropTableIfExists('{{%layoutbuilder_layouts}}');
         $this->dropTableIfExists('{{%layoutbuilder_blocktypes}}');
         $this->dropTableIfExists('{{%layoutbuilder_blocks}}');
