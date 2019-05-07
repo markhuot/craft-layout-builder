@@ -2,6 +2,7 @@
 
 namespace markhuot\layoutbuilder\elements;
 
+use Craft;
 use craft\base\Element;
 use markhuot\layoutbuilder\elements\db\BlockQuery;
 use markhuot\layoutbuilder\records\Block as BlockRecord;
@@ -17,8 +18,7 @@ class Block extends Element {
         return new BlockQuery(static::class);
     }
 
-    static function hasTitles(): bool
-    {
+    static function hasTitles(): bool {
         return true;
     }
 
@@ -28,6 +28,33 @@ class Block extends Element {
 
     function getCpEditUrl() {
         return 'blocks/'.$this->id;
+    }
+
+    /**
+     * Adds in a dynamic title
+     *
+     * @param bool $isNew
+     * @return bool
+     * @throws \Throwable
+     * @throws \yii\base\Exception
+     * @throws \yii\base\InvalidConfigException
+     */
+    public function beforeSave(bool $isNew): bool {
+        $this->updateTitle();
+        return parent::beforeSave($isNew);
+    }
+
+    public function updateTitle() {
+        $blockType = $this->getType();
+        if (!$blockType->hasTitleField) {
+            // Make sure that the locale has been loaded in case the title format has any Date/Time fields
+            Craft::$app->getLocale();
+            // Set Craft to the entry's site's language, in case the title format has any static translations
+            $language = Craft::$app->language;
+            Craft::$app->language = $this->getSite()->language;
+            $this->title = Craft::$app->getView()->renderObjectTemplate($blockType->titleFormat, $this);
+            Craft::$app->language = $language;
+        }
     }
 
     function afterSave(bool $isNew) {

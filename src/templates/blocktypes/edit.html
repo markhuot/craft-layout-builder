@@ -13,12 +13,47 @@
     <input type="hidden" name="blockType[id]" value="{{ blockType.id|default('') }}">
 
     {{ forms.textField({
-        label: 'Title',
+        label: 'Name',
         name: 'blockType[title]',
         value: blockType.title|default(''),
         first: true,
         autofocus: true
     }) }}
+
+    {{ forms.checkboxField({
+        label: "Show the Title field"|t('app'),
+        name: 'blockType[hasTitleField]',
+        toggle: 'titleLabel-container',
+        reverseToggle: 'titleFormat-container',
+        checked: blockType.hasTitleField
+    }) }}
+
+    <div id="titleLabel-container"{% if not blockType.hasTitleField %} class="hidden"{% endif %}>
+        {{ forms.textField({
+            label: "Title Field Label"|t('app'),
+            instructions: "What do you want the Title field to be called?"|t('app'),
+            id: 'titleLabel',
+            name: 'blockType[titleLabel]',
+            value: blockType.titleLabel|default('Title'),
+            errors: blockType.getErrors('titleLabel'),
+            required: true
+        }) }}
+    </div>
+
+    <div id="titleFormat-container"{% if blockType.hasTitleField %} class="hidden"{% endif %}>
+        {{ forms.textField({
+            label: "Title Format"|t('app'),
+            instructions: "What the auto-generated block titles should look like. You can include tags that output entry properties, such as {ex}."|t('app', { ex: '<code>{myCustomField}</code>' }),
+            id: 'titleFormat',
+            name: 'blockType[titleFormat]',
+            class: 'code',
+            value: blockType.titleFormat,
+            errors: blockType.getErrors('titleFormat'),
+            required: true
+        }) }}
+    </div>
+
+    <hr>
 
     <div class="field first">
         <div class="heading">

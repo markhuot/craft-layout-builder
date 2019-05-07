@@ -47,18 +47,27 @@ export function useDraggable({type, key='default', action='move', data={}}) {
         event.dataTransfer.setData(`x-draggable/index`, `${index}`)
         event.dataTransfer.setData(`x-draggable/index:${index}`, `${index}`)
         event.dataTransfer.setData(`x-draggable/data`, JSON.stringify(_data))
-
-        // bus.emit('dragStart', event)
     }
 
     events.onDragEnd = event => {
-        placeholder.hide()
-        // bus.emit('dragEnd', event)
+        placeholder.current.hide()
     }
 
     return {
         events
     }
+}
+
+const isNumeric = value => {
+    return !isNaN(value)
+}
+
+const parseStringValueToNativeType = value => {
+    if (value === 'null') { return null }
+    if (value === 'false') { return false }
+    if (isNumeric(value)) { return +value }
+
+    return value
 }
 
 export function useDroppable({ref, accept=[], onMove, onDelete, key='default'}) {
@@ -120,7 +129,7 @@ export function useDroppable({ref, accept=[], onMove, onDelete, key='default'}) 
         const isSameIndex = event.dataTransfer.types.includes(`x-draggable/index:${placement}`) ||
                             event.dataTransfer.types.includes(`x-draggable/index:${placement-1}`)
         if (isOverSameKey && isSameIndex) {
-            placeholder.hide()
+            placeholder.current.hide()
             return
         }
 
@@ -130,22 +139,22 @@ export function useDroppable({ref, accept=[], onMove, onDelete, key='default'}) 
 
         // if the placement is at the top of the list insert it before the first item
         if (placement === 0) {
-            placeholder.before(listItems[0])
+            placeholder.current.before(listItems[0])
         }
 
         // if the placement is between two items
         else if (listItems[placement-1] && listItems[placement]) {
-            placeholder.between(listItems[placement-1], listItems[placement])
+            placeholder.current.between(listItems[placement-1], listItems[placement])
         }
 
         // if the placement is at the end of the list
         else {
-            placeholder.after(listItems[placement-1])
+            placeholder.current.after(listItems[placement-1])
         }
     }
 
     events.onDragLeave = event => {
-        placeholder.hide()
+        placeholder.current.hide()
     }
 
     events.onDrop = event => {
@@ -158,8 +167,11 @@ export function useDroppable({ref, accept=[], onMove, onDelete, key='default'}) 
 
         event.preventDefault()
 
-        const oldKey = event.dataTransfer.getData('x-draggable/key')
-        const oldIndex = parseInt(event.dataTransfer.getData('x-draggable/index'))
+        // there are some specific keywords we want to transform back in to their
+        // native types.
+        let oldKey = parseStringValueToNativeType(event.dataTransfer.getData('x-draggable/key'))
+        let oldIndex = parseStringValueToNativeType(event.dataTransfer.getData('x-draggable/index'))
+
         const data = JSON.parse(event.dataTransfer.getData('x-draggable/data'))
 
         // if we're moving the element within a single block then we need to account for
@@ -172,7 +184,7 @@ export function useDroppable({ref, accept=[], onMove, onDelete, key='default'}) 
             onMove({event, oldKey, oldIndex, newKey:key, newIndex:placement, data})
         }
 
-        placeholder.hide()
+        placeholder.current.hide()
     }
 
     events.onDragEnd = event => {
@@ -205,6 +217,8 @@ export function useDroppable({ref, accept=[], onMove, onDelete, key='default'}) 
                 }
                 break
             case KEY_DELETE:
+                // @TODO need to check event.target and make sure we're not typing
+                // in a text field _inside_ the draggable
                 event.stopPropagation()
                 if (onDelete) {
                     onDelete({event, key, index: oldIndex})

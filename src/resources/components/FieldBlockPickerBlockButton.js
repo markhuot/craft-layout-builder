@@ -8,7 +8,7 @@ import {useDraggable} from '../hooks/UseDraggable'
 const FieldBlockPickerBlockButton = props => {
     const {events: draggableEvents} = useDraggable({
         type: 'block',
-        key: 'picker',
+        key: null,
         action: 'create',
         data: props.data
     })

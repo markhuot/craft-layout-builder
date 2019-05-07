@@ -17,7 +17,7 @@ const FieldLayout = props => {
     })
 
     return <div tabIndex="0" className="craft-layout-builder-layout" draggable="true" {...draggableEvents}>
-        <style dangerouslySetInnerHTML={{__html:`.craft-layout-builder-grid[data-index="${props.index}"] {${layoutCss}}`}}/>
+        <style dangerouslySetInnerHTML={{__html:`[data-layout-builder-field][data-handle="${props.fieldHandle}"] .craft-layout-builder-grid[data-index="${props.index}"] {${layoutCss}}`}}/>
         <p className="craft-layout-builder-layout-title">{props.data.type.title}</p>
         <input type="hidden" name={`fields[${props.fieldHandle}][${props.index}][uid]`} value={props.data.uid}/>
         <input type="hidden" name={`fields[${props.fieldHandle}][${props.index}][layoutTypeId]`} value={props.data.type.id}/>

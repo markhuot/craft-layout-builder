@@ -11,7 +11,13 @@ class BlocktypesController extends Controller {
 
     function actionCreate() {
         $this->view->registerAssetBundle(LayoutBuilderAssetBundle::class);
-        return $this->renderTemplate('layoutbuilder/blocktypes/edit');
+
+        $blockType = new BlockType;
+        $blockType->hasTitleField = true;
+
+        return $this->renderTemplate('layoutbuilder/blocktypes/edit', [
+            'blockType' => $blockType
+        ]);
     }
 
     function actionStore() {
@@ -23,6 +29,9 @@ class BlocktypesController extends Controller {
         $blockType = new BlockType;
         $blockType->title = \Craft::$app->request->getParam('blockType.title');
         $blockType->icon = \Craft::$app->request->getParam('blockType.icon');
+        $blockType->hasTitleField = \Craft::$app->request->getParam('blockType.hasTitleField');
+        $blockType->titleLabel = \Craft::$app->request->getParam('blockType.titleLabel');
+        $blockType->titleFormat = \Craft::$app->request->getParam('blockType.titleFormat');
         $blockType->fieldLayoutId = $fieldLayout->id;
         $blockType->save();
 
@@ -48,6 +57,9 @@ class BlocktypesController extends Controller {
         $blockType = BlockType::findOne(['id' => $blockTypeId]);
         $blockType->title = \Craft::$app->request->getParam('blockType.title');
         $blockType->icon = \Craft::$app->request->getParam('blockType.icon');
+        $blockType->hasTitleField = \Craft::$app->request->getParam('blockType.hasTitleField');
+        $blockType->titleLabel = \Craft::$app->request->getParam('blockType.titleLabel');
+        $blockType->titleFormat = \Craft::$app->request->getParam('blockType.titleFormat');
         $blockType->fieldLayoutId = $fieldLayout->id;
         $blockType->save();
 

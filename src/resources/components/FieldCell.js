@@ -8,136 +8,56 @@ import React, {
     useCallback
 } from 'react'
 import PropTypes from 'prop-types'
-import BusContext from '../contexts/BusContext'
-import useElementPicker from '../hooks/UseElementPicker'
 import FieldBlock from "./FieldBlock";
-import DropPlaceholderContext from '../contexts/DropPlaceholderContext'
 import {useDroppable} from '../hooks/UseDraggable'
 import FieldBlockPicker from "./FieldBlockPicker";
 import BlockEditorNew from "./BlockEditorNew";
+import ReducerContext from "../contexts/ReducerContext";
+import {addBlock, moveBlock, removeBlock, updateBlock} from '../reducers/block'
 
 const FieldCell = props => {
-    const bus = useContext(BusContext)
-    const [blocks, setBlocks] = useState(props.blocks || [])
+    const blocks = props.blocks
     const isEmpty = blocks.length === 0
     const blockList = useRef(null)
     const addButton = useRef(null)
-    const picker = useElementPicker()
-    const cellKey = `${props.fieldHandle}[${props.layoutIndex}][${props.cellIndex}]`
-    const [showBlockPicker, setShowBlockPicker] = useState(false)
-    const [showBlockEditor, setShowBlockEditor] = useState(false)
+    const cellKey = `${props.fieldHandle}.${props.layoutIndex}.blocks.${props.data.uid}`
+    const [isPickingNewBlock, setIsPickingNewBlock] = useState(false)
+    const [isEditingBlockAtIndex, setIsEditingBlockAtIndex] = useState(false)
+    const dispatch = useContext(ReducerContext)
 
-    const addBlockAtIndex = (newBlock, placement) => {
-        if (!placement) {
-            placement = blocks.length
+    const focus = (index, count) => {
+        if (typeof count === 'undefined') { count = blocks.length }
+        if (index < 0) { index = 0 }
+        if (index > count - 1) { index = count - 1 }
+
+        if (count > 0) {
+            blockList.current.childNodes[index].focus()
         }
-
-        const newBlocks = blocks.slice()
-        newBlocks.splice(placement, 0, newBlock)
-        setBlocks(newBlocks)
-
-        // can't call focus here because childNodes[placement] won't exist
-        // until React can re-render the component. setBlocks isn't synchronous
-        // so we need to find a way to call this after the re-render
-        // blockList.current.childNodes[placement].focus()
-    }
-
-    const removeBlockAtIndex = index => {
-        let newBlocks = blocks.slice()
-        newBlocks.splice(index, 1)
-        setBlocks(newBlocks)
-        if (newBlocks.length) {
-            const focusIndex = index > newBlocks.length - 1 ? newBlocks.length - 1 : index
-            blockList.current.childNodes[focusIndex].focus()
-        }
-        else {
+        else{
             addButton.current.focus()
         }
     }
 
-    const moveBlockToIndex = (oldIndex, newIndex) => {
-        const newBlocks = blocks.slice()
-        if (newIndex < 0) { newIndex = 0 }
-        if (newIndex > blocks.length - 1) { newIndex = blocks.length - 1 }
-        newBlocks.splice(newIndex, 0, newBlocks.splice(oldIndex, 1)[0])
-        setBlocks(newBlocks)
-        blockList.current.childNodes[newIndex].focus()
-    }
-
-    useEffect(() => {
-        const removeBlockFromKeyCallback = index => {
-            removeBlockAtIndex(index)
-        }
-
-        bus.on(`removeBlockFromKey(${cellKey})`, removeBlockFromKeyCallback)
-        return () => bus.off(`removeBlockFromKey(${cellKey})`, removeBlockFromKeyCallback)
-    })
-
-    useEffect(() => {
-
-        const updateBlockCallback = updatedBlock => {
-            let blockFound = false
-            let newBlocks = blocks.map(block => Object.assign({}, block))
-            newBlocks = newBlocks.map(block => {
-                if (block.uid === updatedBlock.uid) {
-                    blockFound = true
-                    return updatedBlock
-                }
-
-                return block
-            })
-            if (blockFound) {
-                setBlocks(newBlocks)
-            }
-        }
-
-        const hideBlockEditorCallback = () => {
-            // const newBlocks = blocks.filter(block => block.id)
-            // setBlocks(newBlocks)
-            setBlocks(oldBlocks => oldBlocks.filter(block => block.id))
-        }
-
-        bus.on('hideBlockEditor', hideBlockEditorCallback)
-        bus.on('updateBlock', updateBlockCallback)
-        return () => {
-            bus.off('updateBlock', updateBlockCallback)
-            bus.off('hideBlockEditor', hideBlockEditorCallback)
-        }
-    })
-
-    picker.on('update', newBlock => {
-        addBlockAtIndex(newBlock)
-        if (newBlock.id === null) {
-            bus.emit('showBlockEditor', newBlock)
-        }
-    })
-
     const onMove = ({oldKey, oldIndex, newKey, newIndex, data}) => {
-        if (oldKey && oldKey === newKey) {
-            moveBlockToIndex(oldIndex, newIndex)
-        }
-        else {
-            if (oldKey) {
-                bus.emit(`removeBlockFromKey(${oldKey})`, oldIndex)
-            }
+        focus(newIndex)
+        dispatch(moveBlock(oldKey, oldIndex, newKey, newIndex, data))
 
-            addBlockAtIndex(data, newIndex)
-
-            if (data.id === null) {
-                bus.emit('showBlockEditor', data)
-            }
+        if (!oldKey && data.id === null) {
+            setIsPickingNewBlock(false)
+            setIsEditingBlockAtIndex(newIndex)
         }
     }
 
     const onDelete = ({index}) => {
-        removeBlockAtIndex(index)
+        focus(index-1, blocks.length - 1)
+        dispatch(removeBlock(cellKey, index))
     }
 
     const {events: droppableEvents} = useDroppable({ref:blockList, key:cellKey, accept:['block'], onMove, onDelete})
 
     return <div className="craft-layout-builder-cell" data-uid={props.data.uid}>
         {props.data.customCss && <style dangerouslySetInnerHTML={{__html:`.craft-layout-builder-cell[data-uid="${props.data.uid}"] {${props.data.customCss}}`}}/>}
-        <p className="craft-layout-builder-cell-title">{props.data.title}</p>
+        {props.data.title && <p className="craft-layout-builder-cell-title">{props.data.title}</p>}
         <ul ref={blockList} {...droppableEvents} className={`craft-layout-builder-spacing craft-layout-builder-blocks ${isEmpty && 'empty'}`}>
             {blocks.map((block, index) => <FieldBlock key={`${props.data.uid}${index}`}
                                                       fieldHandle={props.fieldHandle}
@@ -145,40 +65,41 @@ const FieldCell = props => {
                                                       cellUid={props.data.uid}
                                                       cellIndex={props.cellIndex}
                                                       blockIndex={index}
-                                                      onClick={event => setShowBlockEditor(index)}
+                                                      onClick={event => setIsEditingBlockAtIndex(index)}
                                                       data={block}/>)}
             {blocks.length === 0 && <li className="craft-layout-builder-block-placeholder">Empty</li>}
         </ul>
         <p>
             <button ref={addButton}
-                    className={`clb-appearance-none clb-rounded clb-border clb-border-solid clb-p-1 ${showBlockPicker ? 'clb-border-blue' : ''}`}
+                    className={`clb-appearance-none clb-rounded clb-border clb-border-solid clb-p-1 ${isPickingNewBlock ? 'clb-border-blue' : ''}`}
                     onClick={e => {
                         e.preventDefault()
-                        setShowBlockPicker(!showBlockPicker)
+                        setIsPickingNewBlock(!isPickingNewBlock)
                     }}
             >Add</button>
         </p>
-        {showBlockPicker && <FieldBlockPicker
+        {isPickingNewBlock && <FieldBlockPicker
             onPick={block => {
                 const newIndex = blocks.length
-                addBlockAtIndex(block, newIndex)
-                setShowBlockPicker(false)
-                setShowBlockEditor(newIndex)
+                onMove({oldKey:null, oldIndex: null, newKey: cellKey, newIndex, data: block})
+            }}
+            onCancel={event => {
+                setIsPickingNewBlock(false)
+                addButton.current.focus()
             }}
         />}
-        {showBlockEditor !== false && <BlockEditorNew
-            block={blocks[showBlockEditor]}
+        {isEditingBlockAtIndex !== false && <BlockEditorNew
+            block={blocks[isEditingBlockAtIndex]}
             onClose={() => {
-                if (blocks[showBlockEditor].id === null) {
-                    removeBlockAtIndex(showBlockEditor)
+                if (blocks[isEditingBlockAtIndex].id === null) {
+                    onDelete({index: isEditingBlockAtIndex})
                 }
-                setShowBlockEditor(false)
+                setIsEditingBlockAtIndex(false)
             }}
             onSave={block => {
-                const newBlocks = blocks.slice()
-                newBlocks[showBlockEditor] = block
-                setBlocks(newBlocks)
-                setShowBlockEditor(false)
+                focus(isEditingBlockAtIndex)
+                dispatch(updateBlock(block))
+                setIsEditingBlockAtIndex(false)
             }}
         />}
     </div>

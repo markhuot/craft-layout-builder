@@ -6,8 +6,9 @@ import uuid from 'uuid/v4'
 import {useDraggable} from '../hooks/UseDraggable'
 import ReducerContext from "../contexts/ReducerContext";
 import {addBlock} from "../reducers/block";
+import FieldPickerLayoutButton from "./FieldPickerLayoutButton";
 
-const FieldBlockPickerBlockTypeButton = props => {
+const FieldLayoutPickerButton = props => {
     const getData = () => ({
         id: null,
         uid: uuid(),
@@ -15,7 +16,7 @@ const FieldBlockPickerBlockTypeButton = props => {
     })
 
     const {events: draggableEvents} = useDraggable({
-        type: 'block',
+        type: 'layout',
         key: null,
         action: 'create',
         data: getData
@@ -34,7 +35,7 @@ const FieldBlockPickerBlockTypeButton = props => {
     </button>
 }
 
-FieldBlockPickerBlockTypeButton.propTypes = {
+FieldLayoutPickerButton.propTypes = {
 }
 
-export default FieldBlockPickerBlockTypeButton
+export default FieldLayoutPickerButton

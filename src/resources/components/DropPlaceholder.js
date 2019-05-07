@@ -5,7 +5,6 @@ import React, {
     useRef,
     useImperativeHandle
 } from 'react'
-import BusContext from "../contexts/BusContext";
 
 const DropPlaceholder = (props, ref) => {
     const placeholder = useRef(null)
@@ -15,7 +14,9 @@ const DropPlaceholder = (props, ref) => {
         hide: () => {
             clearTimeout(hideTimeout)
             hideTimeout = setTimeout(() => {
-                placeholder.current.style.display = 'none'
+                if (placeholder.current) {
+                    placeholder.current.style.display = 'none'
+                }
             }, 100)
         },
         before: el => {

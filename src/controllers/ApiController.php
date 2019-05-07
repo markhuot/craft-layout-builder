@@ -14,7 +14,7 @@ class ApiController extends Controller {
     function actionElements() {
         /** @var ActiveQuery[] $queries */
         $queries = [
-            'layouts' => LayoutType::find()->orderBy('title asc'),
+            'layoutTypes' => LayoutType::find()->orderBy('title asc'),
             'blockTypes' => BlockType::find()->orderBy('title asc'),
             'blocks' => Block::find()->limit(10),
         ];
@@ -25,9 +25,9 @@ class ApiController extends Controller {
             }
         }
 
-        $layouts = array_map(function ($layout) {
-            return $layout->toArray();
-        }, $queries['layouts']->all());
+        $layoutTypes = array_map(function ($layoutType) {
+            return $layoutType->toArray();
+        }, $queries['layoutTypes']->all());
 
         $blockTypes = array_map(function ($blockType) {
             return $blockType->toArray();
@@ -38,7 +38,7 @@ class ApiController extends Controller {
         }, $queries['blocks']->all());
 
         return $this->asJson([
-            'layouts' => $layouts,
+            'layoutTypes' => $layoutTypes,
             'blockTypes' => $blockTypes,
             'blocks' => $recentBlocks,
         ]);

@@ -19,13 +19,24 @@ const FieldBlock = props => {
         }
     }
 
+    const onKeyUp = event => {
+        const keyCode = event.keyCode
+        switch (keyCode) {
+            case 13: /* return */
+                if (props.onClick) {
+                    props.onClick(event)
+                }
+                break
+        }
+    }
+
     const {events: draggableEvents} = useDraggable({
         type: 'block',
-        key: `${props.fieldHandle}[${props.layoutIndex}][${props.cellIndex}]`,
+        key: `${props.fieldHandle}.${props.layoutIndex}.blocks.${props.cellUid}`,
         data: props.data,
     })
 
-    return <li ref={anchor} tabIndex="0" className="craft-layout-builder-block" draggable="true" {...draggableEvents}>
+    return <li ref={anchor} tabIndex="0" className="craft-layout-builder-block" draggable="true" {...draggableEvents} onKeyUp={onKeyUp}>
         <input type="hidden" name={`fields[${props.fieldHandle}][${props.layoutIndex}][blocks][${props.cellUid}][]`} value={props.data.uid}/>
         <div className="clb-flex">
             {props.data.type.icon && <span className="craft-layout-builder-cell-icon clb-shrink-0">{icons.withKey(props.data.type.icon)}</span>}

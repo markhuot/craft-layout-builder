@@ -26,18 +26,20 @@
     <input type="hidden" name="block[uid]" value="{{ block.uid }}">
     <input type="hidden" name="block[blockTypeId]" value="{{ block.type.id }}">
 
-    {{ forms.textField({
-        label: "Title"|t('app'),
-        siteId: block.siteId,
-        id: 'title',
-        name: 'title',
-        value: block.title,
-        errors: block.getErrors('title'),
-        first: true,
-        autofocus: true,
-        required: true,
-        maxlength: 255
-    }) }}
+    {% if block.type.hasTitleField %}
+        {{ forms.textField({
+            label: "Title"|t('app'),
+            siteId: block.siteId,
+            id: 'title',
+            name: 'title',
+            value: block.title,
+            errors: block.getErrors('title'),
+            first: true,
+            autofocus: true,
+            required: true,
+            maxlength: 255
+        }) }}
+    {% endif %}
 
     {% for tab in block.getFieldLayout().getTabs() %}
         <div id="{{ tab.getHtmlId() }}"{% if not loop.first %} class="hidden"{% endif %}>
