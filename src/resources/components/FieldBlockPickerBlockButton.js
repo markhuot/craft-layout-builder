@@ -15,6 +15,7 @@ const FieldBlockPickerBlockButton = props => {
 
     const onClick = event => {
         event.preventDefault()
+        console.log('picker button')
         if (props.onPick) {
             props.onPick(props.data)
         }

@@ -6,9 +6,11 @@ import React, {
     forwardRef
 } from 'react'
 import PropTypes from 'prop-types'
+import camelCase from 'camelcase'
 
 const LayoutBuilderCell = (props, ref) => {
-    const [cellTitle, setCellTitle] = useState(props.title || '')
+    const [cellTitle, _setCellTitle] = useState(props.title || '')
+    const [cellHandle, setCellHandle] = useState(props.handle || '')
     const [cellWidth, setCellWidthState] = useState(props.width || '1fr')
     const [customCss, setCustomCss] = useState(props.customCss || '')
     const titleField = useRef( )
@@ -16,6 +18,11 @@ const LayoutBuilderCell = (props, ref) => {
     const removeCell = event => {
         event.preventDefault()
         props.removeCell(props.uid)
+    }
+
+    const setCellTitle = title => {
+        _setCellTitle(title)
+        setCellHandle(camelCase(title))
     }
 
     const setCellWidth = event => {
@@ -36,6 +43,15 @@ const LayoutBuilderCell = (props, ref) => {
             </div>
             <div className="input ltr">
                 <input ref={titleField} type="text" className="text fullwidth" name={`layout[cells][${props.index}][title]`} value={cellTitle} onChange={e => setCellTitle(e.target.value)} placeholder="Title"/>
+            </div>
+        </div>
+
+        <div className="field">
+            <div className="heading">
+                <label>Handle</label>
+            </div>
+            <div className="input ltr">
+                <input type="text" className="text code fullwidth" name={`layout[cells][${props.index}][handle]`} value={cellHandle} onChange={e => setCellHandle(e.target.value)} placeholder="Handle"/>
             </div>
         </div>
 

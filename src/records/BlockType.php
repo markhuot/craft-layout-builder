@@ -13,7 +13,7 @@ class BlockType extends ActiveRecord {
 
     function beforeSave($insert) {
         if (empty($this->getAttribute('handle'))) {
-            $this->setAttribute('handle', StringHelper::toKebabCase($this->getAttribute('title')));
+            $this->setAttribute('handle', StringHelper::toCamelCase($this->getAttribute('title')));
         }
 
         return parent::beforeSave($insert);

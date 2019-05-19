@@ -22,6 +22,11 @@
 {% endblock %}
 
 {% block content %}
+    <style>
+        #global-container.sidebarless #main-content { background-color: #ffffff; }
+        #global-container.sidebarless #tabs ul { background-color: #f1f5f8; }
+    </style>
+
     <input type="hidden" name="layout[withFrame]" value="{{ withFrame ? 1 : 0 }}">
     <input type="hidden" name="block[uid]" value="{{ block.uid }}">
     <input type="hidden" name="block[blockTypeId]" value="{{ block.type.id }}">
@@ -52,14 +57,20 @@
 {% endblock %}
 
 {% js %}
+    $(function() {
+        var form = document.querySelector('form')
+        if (form) {
+            form.focus()
+        }
+    });
+
+    document.addEventListener('click', function (event) {
+        console.log(event.target)
+    })
+
     document.addEventListener('keyup', function (event) {
         if (event.keyCode === 27 /* escape */) {
-            // order matters, if you try to cancel the block editor first the
-            // iframe containing this code will be removed before the focus event
-            // is triggered. Therefore make sure you do any parent page events
-            // _before_ you call cancelBlockEditor and remove the frame
-            parent.layoutBuilderBus.emit('focusBlock', {{ block|json_encode|raw }})
-            parent.layoutBuilderBus.emit('hideBlockEditor', {{ block|json_encode|raw }})
+            parent.layoutBuilderBus.emit('iframeAction', {action: 'close'})
         }
     })
 {% endjs %}

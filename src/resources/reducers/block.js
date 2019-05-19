@@ -45,8 +45,25 @@ export function moveBlockReducer(state, action) {
         set(state, 'blocks.'+action.newKey, [])
     }
 
+    let newKey = action.newKey
+    let newIndex = action.newIndex
+
+    // if newIndex is negative move it to the end of the previous cell
+    // if (action.newIndex < 0) {
+    //     const [fieldHandle, layoutIndex, _, cellUid] = action.newKey.split('.')
+    //     const cellIndex = state.blocks[fieldHandle][layoutIndex].type.cells.findIndex(cell => cell.uid === cellUid)
+    //     if (cellIndex > 0) {
+    //         const newCell = state.blocks[fieldHandle][layoutIndex].type.cells[cellIndex - 1]
+    //         newKey = `${fieldHandle}.${layoutIndex}.blocks.${newCell.uid}`
+    //         newIndex = get(state, 'blocks.'+newKey).length
+    //     }
+    //     else if (layoutIndex > 0) {
+    //
+    //     }
+    // }
+
     let setQuery = {}
-    set(setQuery, 'blocks.'+action.newKey, {$splice: [[action.newIndex, 0, block]]})
+    set(setQuery, 'blocks.'+newKey, {$splice: [[newIndex, 0, block]]})
     return update(state, setQuery)
 }
 

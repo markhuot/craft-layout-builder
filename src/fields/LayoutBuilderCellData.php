@@ -9,9 +9,12 @@ use markhuot\layoutbuilder\elements\Block;
  * @package markhuot\layoutbuilder\fields
  * @property Block $blocks
  */
-class LayoutBuilderCellData {
+class LayoutBuilderCellData implements \ArrayAccess, \Iterator {
 
     protected $data;
+    protected $index = 0;
+
+    /** @var Block[] blocks */
     protected $blocks = [];
 
     function __construct(array $data) {
@@ -24,6 +27,46 @@ class LayoutBuilderCellData {
 
     function __isset($key) {
         return method_exists($this, 'get'.ucfirst($key));
+    }
+
+    public function offsetExists($offset): bool {
+        return isset($this->blocks[$offset]);
+    }
+
+    public function offsetGet($offset){
+        return $this->blocks[$offset];
+    }
+
+    public function offsetSet($offset, $value) {
+        $this->blocks[$offset] = $value;
+    }
+
+    public function offsetUnset($offset) {
+        unset($this->blocks[$offset]);
+    }
+
+    public function current() {
+        return $this->blocks[$this->index];
+    }
+
+    public function key() {
+        return $this->index;
+    }
+
+    public function next() {
+        ++$this->index;
+    }
+
+    public function rewind() {
+        $this->index = 0;
+    }
+
+    public function valid(): bool {
+        return isset($this->blocks[$this->index]);
+    }
+
+    function count() {
+        return count($this->blocks);
     }
 
     function withBlocks(array $blocks) {

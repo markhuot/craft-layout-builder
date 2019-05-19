@@ -24,7 +24,18 @@ function FieldLayoutPicker (props) {
             })
     }, [])
 
-    return createPortal(<div className="craft-layout-builder-field-picker clb-spacing-xl clb-overflow-auto">
+    const onKeyUp = event => {
+        const keyCode = event.keyCode
+        switch (keyCode) {
+            case 27: /* escape */
+                if (props.onCancel) {
+                    props.onCancel(event)
+                }
+                break
+        }
+    }
+
+    return createPortal(<div ref={props.animatedRef} className={`craft-layout-builder-field-picker ${props.className} clb-spacing-xl clb-overflow-auto`} onKeyUp={onKeyUp}>
         <SearchBox/>
         <h2 className="clb-text-600 clb-text-sm clb-text-gray">Block Types</h2>
         <ul className="clb-w-full clb-grid clb-grid-gap clb-justify-items-stretch" style={{'--grid-template-columns': 'repeat(2, 1fr)'}}>

@@ -1,6 +1,7 @@
 import React, {
     useState,
     useEffect,
+    useRef,
 } from 'react'
 import {createPortal} from 'react-dom'
 import uuid from 'uuid/v4'
@@ -13,6 +14,7 @@ import axios from 'axios'
 import FieldBlockPickerBlockButton from "./FieldBlockPickerBlockButton";
 
 function FieldBlockPicker (props) {
+    // const modal = useRef(null)
     const [blockTypes, setBlockTypes] = useState([])
     const [recentBlocks, setRecentBlocks] = useState([])
 
@@ -25,6 +27,15 @@ function FieldBlockPicker (props) {
             })
     }, [])
 
+    // useEffect(() => {
+    //     const onClick = event => {
+    //         // event.stopPropagation()
+    //         console.log('clicked!!!')
+    //     }
+    //     modal.current.addEventListener('click', onClick)
+    //     return () => modal.current.removeEventListener('click', onClick)
+    // })
+
     const onKeyUp = event => {
         const keyCode = event.keyCode
         switch (keyCode) {
@@ -36,7 +47,7 @@ function FieldBlockPicker (props) {
         }
     }
 
-    return createPortal(<div className="craft-layout-builder-field-picker clb-spacing-xl clb-overflow-auto" onKeyUp={onKeyUp}>
+    return createPortal(<div className={`craft-layout-builder-field-picker clb-spacing-xl clb-overflow-auto ${props.className}`} ref={props.animatedRef} onKeyUp={onKeyUp}>
         <SearchBox/>
         <h2 className="clb-text-600 clb-text-sm clb-text-gray">Block Types</h2>
         <ul className="clb-w-full clb-grid clb-grid-gap clb-justify-items-stretch" style={{'--grid-template-columns': 'repeat(2, 1fr)'}}>

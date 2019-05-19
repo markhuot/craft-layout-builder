@@ -55,7 +55,7 @@ class LayoutType extends ActiveRecord {
     }
 
     function getCellsAttribute() {
-        return json_decode($this->getAttribute('cells'), true);
+        return json_decode($this->getAttribute('cells'), true) ?: [];
     }
 
 }

@@ -28,6 +28,7 @@ class BlocktypesController extends Controller {
 
         $blockType = new BlockType;
         $blockType->title = \Craft::$app->request->getParam('blockType.title');
+        $blockType->handle = \Craft::$app->request->getParam('blockType.handle');
         $blockType->icon = \Craft::$app->request->getParam('blockType.icon');
         $blockType->hasTitleField = \Craft::$app->request->getParam('blockType.hasTitleField');
         $blockType->titleLabel = \Craft::$app->request->getParam('blockType.titleLabel');
@@ -56,6 +57,7 @@ class BlocktypesController extends Controller {
 
         $blockType = BlockType::findOne(['id' => $blockTypeId]);
         $blockType->title = \Craft::$app->request->getParam('blockType.title');
+        $blockType->handle = \Craft::$app->request->getParam('blockType.handle');
         $blockType->icon = \Craft::$app->request->getParam('blockType.icon');
         $blockType->hasTitleField = \Craft::$app->request->getParam('blockType.hasTitleField');
         $blockType->titleLabel = \Craft::$app->request->getParam('blockType.titleLabel');

@@ -95,9 +95,11 @@ class LayoutBuilderFieldData {
             $layout['blocks'] = @$layout['blocks'] ?: [];
             foreach ($layout['blocks'] as $cellUid => &$blocks) {
                 foreach ($blocks as &$block) {
-                    $block = $blockModels[$block];
+                    $block = @$blockModels[$block];
                 }
+                $blocks = array_filter($blocks);
             }
+            $layout['blocks'] = array_filter($layout['blocks']);
             return $layoutModels[$layout['uid']]->withBlocks($layout['blocks']);
         }, $this->data);
     }

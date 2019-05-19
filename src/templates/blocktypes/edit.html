@@ -9,16 +9,39 @@
     {url: '/admin/settings/plugins/layoutbuilder', label: 'Layout Builder'},
 ] %}
 
+{% if not blockType.handle %}
+    {% js "new Craft.HandleGenerator('#name', '#handle');" %}
+{% endif %}
+
 {% block content %}
     <input type="hidden" name="blockType[id]" value="{{ blockType.id|default('') }}">
 
     {{ forms.textField({
-        label: 'Name',
-        name: 'blockType[title]',
-        value: blockType.title|default(''),
         first: true,
-        autofocus: true
+        label: "Name"|t('app'),
+        instructions: "What this block type will be called in the CP."|t('app'),
+        id: 'name',
+        name: 'blockType[title]',
+        value: blockType.title,
+        errors: blockType.getErrors('title'),
+        autofocus: true,
+        required: true
     }) }}
+
+    {{ forms.textField({
+        label: "Handle"|t('app'),
+        instructions: "How you’ll refer to this block type in the templates."|t('app'),
+        id: 'handle',
+        name: 'blockType[handle]',
+        class: 'code',
+        autocorrect: false,
+        autocapitalize: false,
+        value: blockType.handle,
+        errors: blockType.getErrors('handle'),
+        required: true
+    }) }}
+
+    <hr>
 
     {{ forms.checkboxField({
         label: "Show the Title field"|t('app'),

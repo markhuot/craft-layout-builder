@@ -8,11 +8,18 @@
         top: 0;
         right: 0;
         width: 351px;
+        /*width: 576px;*/
         height: 100vh;
         background: #fff;
         box-shadow: 0 0 10px rgba(0,0,0,0.2);
         z-index: 100;
         padding: 24px;
+        transform: translateX(100%);
+        transition: transform 0.2s;
+    }
+    .craft-layout-builder-field-picker.entering,
+    .craft-layout-builder-field-picker.active {
+        transform: translateX(0%);
     }
     .craft-layout-builder-grid {
         display: grid;
@@ -25,24 +32,28 @@
         padding: 0 10px 10px;
         margin-left: -10px;
         margin-right: -10px;
-        /*background-image: url(http://dev.craftql.com/cpresources/ef13988d/images/fieldlayoutform-bg_2x.png);*/
-        /*background-size: 30px 30px;*/
+        /*background-color: #eeeeee;*/
     }
     .craft-layout-builder-layout:focus {
         outline: none;
         border-color: #0D99F2;
     }
     .craft-layout-builder-layout-title {
-        font-size: 11px;
+        /*font-size: 11px;*/
         color: #666;
-        font-weight: bold;
+        /*text-transform: uppercase;*/
+        /*font-weight: bold;*/
+        /*border-bottom: 1px solid #eee;*/
+    }
+    .craft-layout-builder-cells {
+        margin-left: 24px;
     }
     .craft-layout-builder-cell {
         /*border: 1px solid rgba(0, 0, 20, 0.1);*/
         /*border-radius: 2px;*/
         position: relative;
         /*padding: 24px 8px 5px;*/
-        background: #fff;
+        /*background: #fff;*/
         overflow: hidden;
         margin: -6px;
         padding: 5px;
@@ -55,7 +66,7 @@
         /*padding: 10px;*/
     }
     .craft-layout-builder-cell-icon {
-        fill: #999;
+        fill: #666;
         margin-left: 5px;
         margin-right: 10px;
         display: inline-block;
@@ -82,8 +93,66 @@
         width: 100vw;
         height: 100vh;
         z-index: 101;
+        /*transform: translateX(576px);*/
+        background-color: rgba(255,255,255,0);
+    }
+
+
+
+    #global-container {
+        transition: transform 0.2s;
+    }
+    .block-editor-active #global-container,
+    .block-editor-leaving #global-container {
+        transition: transform 2s;
+    }
+    .craft-layout-builder-block-editor {
+        transition: transform 0.2s, background-color 0.2s;
+    }
+    .craft-layout-builder-block-editor.active {
+        transition: transform 2s, background-color 0.2s;
+    }
+    .craft-layout-builder-block-editor-placeholder {
+        transition: transform 0.2s;
+    }
+    .craft-layout-builder-block-editor-screen {
+        transition: transform 0.2s;
+    }
+
+
+
+
+
+
+    #global-container {
+        transform: translateX(0);
+    }
+    .block-editor-entering #global-container,
+    .block-editor-active #global-container {
+        transform: translateX(-225px);
+    }
+    .craft-layout-builder-block-editor.entering,
+    .craft-layout-builder-block-editor.active {
+        /*transform: translateX(0);*/
+        background-color: rgba(255,255,255,0.7);
+    }
+    .craft-layout-builder-block-editor-placeholder {
+        position: absolute;
+        top: 0;
+        right: 0;
+        width: 576px;
+        height: 100vh;
+        background-color: #e7eef3;
+        transform: translateX(576px);
+        box-shadow: 0 0 10px rgba(0,0,0,0.2);
+    }
+    .craft-layout-builder-block-editor.entering .craft-layout-builder-block-editor-placeholder,
+    .craft-layout-builder-block-editor.active .craft-layout-builder-block-editor-placeholder {
+        /*transition: transform 0.4s;*/
+        transform: translateX(0);
     }
     .craft-layout-builder-block-editor-shade {
+        display: none;
         position: absolute;
         top: 0;
         left: 0;
@@ -98,10 +167,15 @@
         /*left: 300px;*/
         /*width: calc(100vw - 300px);*/
         right: 0;
-        width: 576px;
-        background: #fff;
-        height: 100%;
-        box-shadow: 0 0 30px rgba(0,0,0,0.3);
+        width: 100vw;
+        /*background: transparent;*/
+        height: 100vh;
+        transform: translateX(576px);
+        /*transition: transform 0.3s;*/
+        /*box-shadow: 0 0 30px rgba(0,0,0,0.3);*/
+    }
+    .craft-layout-builder-block-editor.active .craft-layout-builder-block-editor-screen {
+        transform: translateX(0);
     }
     .craft-layout-builder-blocks.empty {
         background-color: rgba(0, 0, 20, 0.05);
@@ -148,7 +222,7 @@
         height: 4px;
         width: 200px;
         border-radius: 2px;
-        z-index: 100;
+        z-index: 200;
         transform: translateY(-50%);
         display: none;
         animation: pulse 1.25s infinite;

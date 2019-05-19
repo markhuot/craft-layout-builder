@@ -110,6 +110,7 @@ button[class*="clb"]:active { color: inherit; }
 .clb-bg-white { background-color: #fff; }
 .clb-bg-blue { background-color: #0d99f2; }
 .clb-bg-purple { background-color: #a664bf; }
+.clb-bg-gray { background-color: rgba(0, 0, 20, 0.1); }
 
 .clb-grid {
     display: grid;

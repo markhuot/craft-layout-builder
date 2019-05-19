@@ -8,6 +8,8 @@
 {#  - removed the #global-sidebar                                                                                     #}
 {#  - removed #nav-toggle (since we removed the nav)                                                                  #}
 {#  - removed the queues (since the parent page should do that for us                                                 #}
+{#  - added a custom class name to the #global-container for CSS targeting                                            #}
+{#  - removed alerts div                                                                                              #}
 {#                                                                                                                    #}
 {# ================================================================================================================== #}
 {# ================================================================================================================== #}
@@ -28,29 +30,18 @@
 {% block head %}
     {{ parent() }}
     <style>
+        html, body { background: transparent; }
         body.ltr #global-container { left: 0; }
+        /*body.ltr #global-container #main-container #main:after { content: ''; position: absolute; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(255,255,255,0.8); z-index: 1 }*/
+        body.ltr #global-container #main-container #main-form { position: absolute; top: 0; right: 0; height: 100vh; z-index: 2; }
+        body.ltr #global-container #main-container #main #header,
+        body.ltr #global-container #main-container #main #main-content { width: 576px }
     </style>
 {% endblock %}
 
 {% block body %}
-    <div id="global-container">
+    <div id="global-container" class="sidebarless">
         <div id="main-container">
-
-            {# alerts #}
-            {% if craft.cp.areAlertsCached() %}
-                {% set alerts = craft.cp.getAlerts() %}
-                {% if alerts %}
-                    <ul id="alerts">
-                        {% for alert in craft.cp.getAlerts() %}
-                            <li>{{ alert|raw }}</li>
-                        {% endfor %}
-                    </ul>
-                {% endif %}
-            {% else %}
-                {% js %}
-                    Craft.cp.fetchAlerts();
-                {% endjs %}
-            {% endif %}
 
             {# notifications #}
             <div id="notifications-wrapper">
@@ -81,7 +72,7 @@
             <main id="main" role="main">
 
                 {% if fullPageForm -%}
-                <form {% block mainFormAttributes %}id="main-form" method="post" accept-charset="UTF-8" data-saveshortcut{% if saveShortcutRedirect is defined %} data-saveshortcut-redirect="{{ saveShortcutRedirect|hash }}"{% endif %} data-confirm-unload novalidate{% endblock %}>
+                <form tabindex="0" {% block mainFormAttributes %}id="main-form" method="post" accept-charset="UTF-8" data-saveshortcut{% if saveShortcutRedirect is defined %} data-saveshortcut-redirect="{{ saveShortcutRedirect|hash }}"{% endif %} data-confirm-unload novalidate{% endblock %}>
                     {{- csrfInput() }}
                     {%- endif %}
 
