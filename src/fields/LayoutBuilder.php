@@ -3,8 +3,10 @@
 namespace markhuot\layoutbuilder\fields;
 
 use Craft;
+use craft\base\Element;
 use craft\base\Field;
 use craft\base\ElementInterface;
+use craft\fields\BaseRelationField;
 use markhuot\layoutbuilder\assets\FieldInputAssetBundle;
 use markhuot\layoutbuilder\elements\Block;
 use markhuot\LayoutBuilder\elements\Row;
@@ -46,6 +48,66 @@ class LayoutBuilder extends Field {
             'value' => $value->toArray(),
             'field' => $this,
         ]);
+    }
+
+    /**
+     * @param ElementInterface $element
+     * @param bool $isNew
+     * @return bool
+     * @throws \Throwable
+     * @throws \craft\errors\ElementNotFoundException
+     * @throws \yii\base\Exception
+     */
+    function beforeElementSave(ElementInterface $element, bool $isNew): bool {
+        $fields = [];
+        foreach ($element->fieldLayout->fields as $field) {
+            if (is_a($field, LayoutBuilder::class)) {
+                $fields[] = $field;
+            }
+        }
+
+        foreach ($fields as $field) {
+            $relations = [];
+
+            foreach (Craft::$app->request->getParam("fields.{$field->handle}", []) as $index => $layoutData) {
+                $uid = $layoutData['uid'];
+                $typeId = $layoutData['layoutTypeId'];
+
+                $layoutElement = \markhuot\layoutbuilder\elements\Layout::find()->where(['{{%elements}}.uid' => $uid])->one();
+                if (!$layoutElement) {
+                    $layout = new \markhuot\layoutbuilder\elements\Layout;
+                    $layout->layoutTypeId = $typeId;
+                    // $layout->setFieldValuesFromRequest('fields');
+                    Craft::$app->elements->saveElement($layout);
+
+                    $layoutElement = \craft\records\Element::findOne($layout->id);
+                    $layoutElement->uid = $uid;
+                    $layoutElement->save();
+                }
+
+                $relations[] = $layoutElement->id;
+                $blockIds = [];
+                $blockUids = [];
+                $cells = @$layoutData['blocks'] ?: [];
+                foreach ($cells as $cell) {
+                    $blockUids = array_merge($blockUids, $cell);
+                }
+                if (!empty($blockUids)) {
+                    $blocks = Block::find()->where(['{{%elements}}.uid' => $blockUids])->all();
+                    $blockIds = array_map(function ($block) {
+                        return $block->id;
+                    }, $blocks);
+                }
+
+                if (!empty($blockIds)) {
+                    $relations = array_merge($relations, $blockIds);
+                }
+            }
+
+            \markhuot\layoutbuilder\LayoutBuilder::getInstance()->layoutRelations->saveRelations($field, $element, $relations);
+        }
+
+        return parent::beforeElementSave($element, $isNew);
     }
 
     /**

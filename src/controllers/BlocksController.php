@@ -5,12 +5,19 @@ namespace markhuot\layoutbuilder\controllers;
 use Craft;
 use craft\records\Element;
 use craft\web\Controller;
+use markhuot\layoutbuilder\assets\FieldInputAssetBundle;
 use markhuot\layoutbuilder\elements\Block;
 use markhuot\layoutbuilder\records\BlockType;
 
 class BlocksController extends Controller {
 
+    function actionIndex() {
+        return $this->renderTemplate('layoutbuilder/blocks/index', []);
+    }
+
     function actionCreate($blockTypeHandle) {
+        Craft::$app->view->registerAssetBundle(FieldInputAssetBundle::class);
+
         $blockType = BlockType::findOne(['handle' => $blockTypeHandle]);
 
         $block = new Block;
@@ -68,6 +75,8 @@ class BlocksController extends Controller {
     }
 
     function actionShow($blockId) {
+        Craft::$app->view->registerAssetBundle(FieldInputAssetBundle::class);
+
         $block = Block::findOne($blockId);
         $tabs = [];
 

@@ -4,12 +4,15 @@ namespace markhuot\layoutbuilder;
 
 use craft\base\Plugin;
 use craft\events\RegisterComponentTypesEvent;
+use craft\events\RegisterCpNavItemsEvent;
 use craft\events\RegisterTemplateRootsEvent;
 use craft\services\Fields;
 use craft\events\RegisterUrlRulesEvent;
+use craft\web\twig\variables\Cp;
 use craft\web\twig\variables\CraftVariable;
 use craft\web\UrlManager;
 use craft\web\View;
+use markhuot\layoutbuilder\elements\Block;
 use markhuot\layoutbuilder\services\LayoutsService;
 use markhuot\layoutbuilder\variables\LayoutBuilderVariable;
 use yii\base\Event;
@@ -29,6 +32,8 @@ class LayoutBuilder extends Plugin
      */
     function init() {
         Event::on(UrlManager::class, UrlManager::EVENT_REGISTER_CP_URL_RULES, function (RegisterUrlRulesEvent $event) {
+            $event->rules['GET blocks'] = 'layoutbuilder/blocks/index';
+
             $event->rules['GET layoutbuilder/api/elements'] = 'layoutbuilder/api/elements';
 
             $event->rules['GET settings/plugins/layoutbuilder/layouttypes/create'] = 'layoutbuilder/layouttypes/create';
@@ -61,12 +66,27 @@ class LayoutBuilder extends Plugin
 
             $variable->set('layoutbuilder', LayoutBuilderVariable::class);
         });
+
+        Event::on(
+            Cp::class,
+            Cp::EVENT_REGISTER_CP_NAV_ITEMS,
+            function(RegisterCpNavItemsEvent $event) {
+                $event->navItems[] = [
+                    'url' => 'blocks',
+                    'label' => 'Blocks',
+                    // 'icon' => '@ns/prefix/path/to/icon.svg',
+                ];
+            }
+        );
     }
 
     /**
      * Settings HTML
      *
      * @return string
+     * @throws \Twig\Error\LoaderError
+     * @throws \Twig\Error\RuntimeError
+     * @throws \Twig\Error\SyntaxError
      */
     protected function settingsHtml() {
         return \Craft::$app->getView()->renderTemplate('layoutbuilder/settings', [

@@ -20,4 +20,8 @@ class LayoutBuilderVariable {
         return $query;
     }
 
+    function getIconSource($iconKey) {
+        return file_get_contents(__DIR__.'/../resources/icons/'.$iconKey);
+    }
+
 }

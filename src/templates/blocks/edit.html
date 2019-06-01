@@ -56,6 +56,43 @@
     {% endfor %}
 {% endblock %}
 
+{% block details %}
+    {% if withFrame %}
+        <div id="settings" class="meta">
+            <div class="field lightswitch-field " id="enabled-field">
+                <div class="heading">
+                    <label id="label267864904" for="enabled">Enabled</label>
+                </div>
+                <div class="input ltr">
+                    {{ forms.lightswitchField({
+                        id: 'enabled',
+                        name: 'enabled',
+                        on: block.enabled,
+                    }) }}
+                </div>
+            </div>
+        </div>
+        <div class="meta read-only">
+            <div class="data">
+                <h5 class="heading">{{ "Created at"|t('app') }}</h5>
+                <div class="value">{{ block.dateCreated|datetime('short') }}</div>
+            </div>
+            <div class="data">
+                <h5 class="heading">{{ "Updated at"|t('app') }}</h5>
+                <div class="value">{{ block.dateUpdated|datetime('short') }}</div>
+            </div>
+            <div class="data clb-align-items-start">
+                <h5 class="heading">Related entries</h5>
+                <ul class="value">
+                    {% for entry in craft.entries.relatedTo(block) %}
+                        <li><a href="{{ entry.cpEditUrl }}">{{ entry.title }}</a></li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+    {% endif %}
+{% endblock %}
+
 {% js %}
     $(function() {
         var form = document.querySelector('form')
@@ -64,8 +101,24 @@
         }
     });
 
+    function closest(el, selector) {
+        while (el) {
+            if ($(el).is(selector)) {
+                return el
+            }
+
+            el = el.parentNode
+        }
+
+        return false
+    }
+
     document.addEventListener('click', function (event) {
-        console.log(event.target)
+        if (closest(event.target, '#main-form')) {
+            return;
+        }
+
+        parent.layoutBuilderBus.emit('iframeAction', {action: 'close'})
     })
 
     document.addEventListener('keyup', function (event) {

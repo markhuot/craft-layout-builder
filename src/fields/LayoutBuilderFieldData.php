@@ -31,48 +31,26 @@ class LayoutBuilderFieldData {
      */
     protected $data = [];
 
+    /**
+     * LayoutBuilderFieldData constructor.
+     * @param array $data
+     */
     function __construct(array $data) {
         $this->data = $data;
-
-        // @todo refactor layout saving
-        // all this DB stuff shouldn't happen here. It should be in the field save
-        // method so that $data _always_ comes in to here with existing and valid
-        // layouts
-        $layoutUids = [];
-        $layoutTypeMapping = [];
-        foreach ($this->data as $layout) {
-            $layoutUids[] = $layout['uid'];
-            $layoutTypeMapping[$layout['uid']] = $layout['layoutTypeId'];
-        }
-
-        $storedLayoutUids = [];
-        $layouts = Layout::find()->where(['{{%elements}}.uid' => $layoutUids])->all();
-        foreach ($layouts as $layout) {
-            $storedLayoutUids[] = $layout->uid;
-        }
-
-        $missingLayoutUids = array_diff($layoutUids, $storedLayoutUids);
-
-        foreach ($missingLayoutUids as $missingLayoutUid) {
-            $layout = new Layout;
-            $layout->layoutTypeId = $layoutTypeMapping[$missingLayoutUid];
-            $layout->setFieldValuesFromRequest('fields');
-            \Craft::$app->elements->saveElement($layout);
-
-            $layoutElement = Element::findOne($layout->id);
-            $layoutElement->uid = $missingLayoutUid;
-            $layoutElement->save();
-
-            // overwrite the UID on our object, in case it's referenced
-            // later in the code without a fresh fetch from the DB
-            $layout->uid = $missingLayoutUid;
-        }
     }
 
+    /**
+     * @param $key
+     * @return mixed
+     */
     function __get($key) {
         return $this->{'get'.ucfirst($key)}();
     }
 
+    /**
+     * @param $key
+     * @return mixed
+     */
     function __isset($key) {
         return $this->{'isset'.ucfirst($key)}();
     }

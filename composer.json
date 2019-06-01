@@ -18,6 +18,8 @@
         "developer": "Mark Huot",
         "developerUrl": "https://www.github.com/markhuot",
         "class": "markhuot\\layoutbuilder\\LayoutBuilder",
-        "components": {}
+        "components": {
+            "layoutRelations": "markhuot\\layoutbuilder\\services\\LayoutRelationsService"
+        }
     }
 }

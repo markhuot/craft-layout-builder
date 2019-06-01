@@ -4,11 +4,15 @@ namespace markhuot\layoutbuilder\elements;
 
 use Craft;
 use craft\base\Element;
+use craft\base\ElementTrait;
+use craft\elements\db\EntryQuery;
+use craft\elements\Entry;
 use markhuot\layoutbuilder\elements\db\BlockQuery;
 use markhuot\layoutbuilder\records\Block as BlockRecord;
 use craft\elements\db\ElementQueryInterface;
 use markhuot\LayoutBuilder\elements\db\RowQuery;
 use markhuot\layoutbuilder\records\BlockType;
+use yii\base\InvalidConfigException;
 
 class Block extends Element {
 
@@ -28,6 +32,85 @@ class Block extends Element {
 
     function getCpEditUrl() {
         return 'blocks/'.$this->id;
+    }
+
+    protected static function defineSources(string $context = null): array
+    {
+        $sources = [
+            [
+                'key' => '*',
+                'label' => 'All Blocks',
+                'criteria' => []
+            ],
+        ];
+
+        foreach (BlockType::find()->orderBy('title asc')->all() as $blockType) {
+            $sources[] = [
+                'key' => $blockType->handle,
+                'label' => $blockType->title,
+                'criteria' => [
+                    'typeId' => $blockType->id,
+                ]
+            ];
+        }
+
+        return $sources;
+    }
+
+    protected static function defineActions(string $source = null): array {
+        $actions = [];
+
+        // $actions[] = [
+        //
+        // ];
+
+        return $actions;
+    }
+
+    protected static function defineTableAttributes(): array
+    {
+        return [
+            'title' => Craft::t('app', 'Title'),
+            'type' => Craft::t('app', 'Type'),
+            'relatedCount' => Craft::t('app', 'Related'),
+        ];
+    }
+
+    protected function tableAttributeHtml(string $attribute): string {
+        switch ($attribute) {
+            case 'type':
+                try {
+                    return Craft::t('site', $this->getType()->title);
+                } catch (\Exception $e) {
+                    return Craft::t('app', 'Unknown');
+                }
+
+            case 'relatedCount':
+                return (new EntryQuery(Entry::class))->relatedTo($this)->count();
+        }
+
+        return parent::tableAttributeHtml($attribute);
+    }
+
+    protected static function defineSortOptions(): array
+    {
+        return [
+            [
+                'label' => Craft::t('app', 'Title'),
+                'orderBy' => 'content.title',
+                'attribute' => 'title',
+            ],
+            [
+                'label' => Craft::t('app', 'Type'),
+                'orderBy' => 'layoutbuilder_blocktypes.title',
+                'attribute' => 'type',
+            ],
+            // [
+            //     'label' => Craft::t('app', 'Related'),
+            //     'orderBy' => 'layoutbuilder_blocktypes.title',
+            //     'attribute' => 'related',
+            // ],
+        ];
     }
 
     /**

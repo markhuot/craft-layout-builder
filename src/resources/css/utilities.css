@@ -51,6 +51,7 @@ button[class*="clb"]:active { color: inherit; }
 .clb-text-gray, .clb-text-grey { color: #576575; }
 
 .clb-text-left { text-align: left; }
+table.editable tbody tr td.clb-text-left { text-align: left; }
 
 .clb-p-0 { padding: 0; }
 .clb-p-1 { padding: 0.25rem; }
@@ -120,6 +121,8 @@ button[class*="clb"]:active { color: inherit; }
 .clb-grid-gap { grid-gap: 10px; }
 .clb-grid-gap-lg { grid-gap: 24px; }
 
+.clb-align-items-start { align-items: start; }
+.meta > .field.clb-align-items-start, .meta > .data.clb-align-items-start { align-items: start; }
 .clb-justify-items-stretch { justify-items: stretch; }
 
 .clb-flex { display: flex; }

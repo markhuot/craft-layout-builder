@@ -100,23 +100,28 @@
 
 
     #global-container {
-        transition: transform 0.2s;
+        transition: transform 0.3s;
     }
     .block-editor-active #global-container,
     .block-editor-leaving #global-container {
-        transition: transform 2s;
+        transition: transform 0.2s;
     }
     .craft-layout-builder-block-editor {
         transition: transform 0.2s, background-color 0.2s;
     }
     .craft-layout-builder-block-editor.active {
-        transition: transform 2s, background-color 0.2s;
+        transition: transform 0.3s, background-color 0.2s;
     }
     .craft-layout-builder-block-editor-placeholder {
         transition: transform 0.2s;
     }
     .craft-layout-builder-block-editor-screen {
         transition: transform 0.2s;
+    }
+    .craft-layout-builder-block-editor.leaving,
+    .leaving .craft-layout-builder-block-editor-placeholder,
+    .leaving .craft-layout-builder-block-editor-screen {
+        transition: transform 0.3s;
     }
 
 
