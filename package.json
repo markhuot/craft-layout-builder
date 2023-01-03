@@ -11,7 +11,7 @@
     "prop-types": "^15.7.2",
     "react": "^16.8.4",
     "react-dom": "^16.8.4",
-    "react-svg-loader": "^2.1.0",
+    "react-svg-loader": "^3.0.3",
     "set-value": "^3.0.0",
     "uuid": "^3.3.2",
     "webpack": "^4.29.6",
